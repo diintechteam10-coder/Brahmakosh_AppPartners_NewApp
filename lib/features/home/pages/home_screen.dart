@@ -262,7 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.25),
-      builder: (_) => Obx(() {
+      builder: (_) => PopScope(
+        canPop: false,
+        child: Obx(() {
         return IncomingRequestDialog(
           data: (data is Map<String, dynamic>) ? data : <String, dynamic>{},
           isAccepting: _acceptCtrl.isLoading.value,
@@ -272,18 +274,18 @@ class _HomeScreenState extends State<HomeScreen> {
             final requestId = _extractConversationId(data);
             if (requestId == null || requestId.isEmpty) {
               Get.snackbar("Error", "requestId missing");
+              if (mounted) Navigator.pop(context);
               return;
             }
 
             await _rejectCtrl.reject(requestId: requestId, reason: reason);
 
-            if (_rejectCtrl.error.value.isNotEmpty) {
-              Get.snackbar("Reject Failed", _rejectCtrl.error.value);
-              return;
-            }
-
             _removeRequest(requestId);
             _reqCtrl.requests.removeWhere((r) => r.conversationId == requestId);
+
+            if (_rejectCtrl.error.value.isNotEmpty) {
+              Get.snackbar("Reject Failed", _rejectCtrl.error.value);
+            }
 
             if (mounted) Navigator.pop(context);
           },
@@ -292,20 +294,22 @@ class _HomeScreenState extends State<HomeScreen> {
             final requestId = _extractConversationId(data);
             if (requestId == null || requestId.isEmpty) {
               Get.snackbar("Error", "requestId missing");
+              if (mounted) Navigator.pop(context);
               return;
             }
 
             await _acceptCtrl.accept(requestId: requestId);
 
+            _removeRequest(requestId);
+            _reqCtrl.requests.removeWhere((r) => r.conversationId == requestId);
+
             if (_acceptCtrl.error.value.isNotEmpty) {
               Get.snackbar("Accept Failed", _acceptCtrl.error.value);
+              if (mounted) Navigator.pop(context);
               return;
             }
 
             final accepted = _acceptCtrl.acceptedConversation.value;
-
-            _removeRequest(requestId);
-            _reqCtrl.requests.removeWhere((r) => r.conversationId == requestId);
 
             if (mounted) Navigator.pop(context);
 
@@ -324,6 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       }),
+      ),
     ).then((_) {
       if (mounted) {
         setState(() => _isDialogOpen = false);
@@ -783,6 +788,8 @@ class _PendingRequestsList extends StatelessWidget {
       return RefreshIndicator(
         onRefresh: apiCtrl.fetchRequests,
         child: ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 16.w),
           itemCount: merged.length,
           itemBuilder: (context, index) {

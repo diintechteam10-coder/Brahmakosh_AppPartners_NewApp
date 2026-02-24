@@ -1,5 +1,5 @@
 class AppUrls {
-  static const String baseUrl = "https://stage.brahmakosh.com";
+  static const String baseUrl = "https://prod.brahmakosh.com";
 
   // Auth & Registration
   static const String sendOtp = "/api/mobile/partner/register/step2";

@@ -21,7 +21,7 @@ class SocketService {
 
     disconnect();
 
-    _socket = IO.io("https://stage.brahmakosh.com", {
+    _socket = IO.io("https://prod.brahmakosh.com", {
       "path": "/socket.io/",
       "transports": ["polling"], // keep as your backend needs
       "autoConnect": false,

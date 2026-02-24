@@ -95,7 +95,7 @@ class Partner {
       specialization:
           (json['specialization'] as List?)?.map((e) => e.toString()).toList() ??
               [],
-      rating: json['rating'] ?? 0,
+      rating: (json['rating'] as num?)?.toInt() ?? 0,
       onlineStatus: json['onlineStatus'] ?? '',
       isAvailable: json['isAvailable'] ?? false,
     );
@@ -175,15 +175,15 @@ class SessionDetails {
 
   factory SessionDetails.fromJson(Map<String, dynamic> json) {
     return SessionDetails(
-      duration: json['duration'] ?? 0,
-      messagesCount: json['messagesCount'] ?? 0,
+      duration: (json['duration'] as num?)?.toInt() ?? 0,
+      messagesCount: (json['messagesCount'] as num?)?.toInt() ?? 0,
       startTime:
           json['startTime'] != null ? DateTime.parse(json['startTime']) : null,
       endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
-      creditsUsed: json['creditsUsed'] ?? 0,
-      partnerCreditsEarned: json['partnerCreditsEarned'] ?? 0,
-      userRatePerMinute: json['userRatePerMinute'] ?? 0,
-      partnerRatePerMinute: json['partnerRatePerMinute'] ?? 0,
+      creditsUsed: (json['creditsUsed'] as num?)?.toInt() ?? 0,
+      partnerCreditsEarned: (json['partnerCreditsEarned'] as num?)?.toInt() ?? 0,
+      userRatePerMinute: (json['userRatePerMinute'] as num?)?.toInt() ?? 0,
+      partnerRatePerMinute: (json['partnerRatePerMinute'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -200,7 +200,7 @@ class Payment {
 
   factory Payment.fromJson(Map<String, dynamic> json) {
     return Payment(
-      amount: json['amount'] ?? 0,
+      amount: (json['amount'] as num?)?.toInt() ?? 0,
       currency: json['currency'] ?? '',
       status: json['status'] ?? '',
     );
@@ -234,7 +234,7 @@ class RatingInfo {
 
   factory RatingInfo.fromJson(Map<String, dynamic> json) {
     return RatingInfo(
-      stars: json['stars'],
+      stars: (json['stars'] as num?)?.toInt(),
       feedback: json['feedback'],
       satisfaction: json['satisfaction'],
       ratedAt:
@@ -254,8 +254,8 @@ class UnreadCount {
 
   factory UnreadCount.fromJson(Map<String, dynamic> json) {
     return UnreadCount(
-      partner: json['partner'] ?? 0,
-      user: json['user'] ?? 0,
+      partner: (json['partner'] as num?)?.toInt() ?? 0,
+      user: (json['user'] as num?)?.toInt() ?? 0,
     );
   }
 }
