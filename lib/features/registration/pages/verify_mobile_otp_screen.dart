@@ -56,11 +56,7 @@ class VerifyMobileNoOtpScreen extends StatelessWidget {
                     color: Colours.orangeFF9F07.withOpacity(0.18),
                   ),
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.self_improvement,
-                    size: 90.sp,
-                    color: Colours.orangeFF9F07,
-                  ),
+                    child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
                 ),
 
                 24.h.verticalSpace,

@@ -96,14 +96,7 @@ class AppLogo extends StatelessWidget {
         ],
       ),
       alignment: Alignment.center,
-      child: Text(
-        'B',
-        style: TextStyle(
-          fontFamily: Fonts.bold,
-          fontSize: (size * 0.45).sp,
-          color: Colours.black0F1729,
-        ),
-      ),
+      child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
     );
   }
 }

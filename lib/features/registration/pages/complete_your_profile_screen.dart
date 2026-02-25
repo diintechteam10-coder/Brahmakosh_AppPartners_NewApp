@@ -264,14 +264,7 @@ class CompleteProfileScreen extends StatelessWidget {
                   Center(
                     child: Column(
                       children: [
-                        Text(
-                          'ॐ',
-                          style: TextStyle(
-                            fontFamily: Fonts.bold,
-                            fontSize: 36.sp,
-                            color: Colours.orangeFF9F07,
-                          ),
-                        ),
+                       Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,),
                         12.verticalSpace,
                         Text(
                           'Complete Your Profile',

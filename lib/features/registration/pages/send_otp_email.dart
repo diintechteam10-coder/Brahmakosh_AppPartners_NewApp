@@ -85,14 +85,7 @@ class _SendOtpEmailScreenState extends State<SendOtpEmailScreen> {
                           ],
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          'ॐ',
-                          style: TextStyle(
-                            fontFamily: Fonts.bold,
-                            fontSize: 36.sp,
-                            color: Colours.black0F1729,
-                          ),
-                        ),
+                          child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
                       ),
 
                       32.h.verticalSpace,
