@@ -9,7 +9,7 @@
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
-        android:label="brahmakoshpartners"
+        android:label="BrahmakoshPartners"
         android:name="${applicationName}"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"

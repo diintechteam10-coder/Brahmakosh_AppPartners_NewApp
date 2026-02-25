@@ -38,6 +38,14 @@
           }
         },
         {
+          "client_id": "449350149768-5veik912oiqrrm4t2gkut64jiqd7alho.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brahmakosh.app",
+            "certificate_hash": "1f65fe9d090dd1c43b5c1e562db68ae3e358a587"
+          }
+        },
+        {
           "client_id": "449350149768-6jpi7u46jb4qkrduq9rk8mp9l8peto7s.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -59,6 +67,14 @@
           "android_info": {
             "package_name": "com.brahmakosh.app",
             "certificate_hash": "d86365d883bb805055cd91e3bc2c029d91e1c5f1"
+          }
+        },
+        {
+          "client_id": "449350149768-vecvlv5eqavami1t13msclb8tm7jcg35.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brahmakosh.app",
+            "certificate_hash": "9c350a4f3461e4cf6b985f4096952de51eb6feea"
           }
         },
         {
