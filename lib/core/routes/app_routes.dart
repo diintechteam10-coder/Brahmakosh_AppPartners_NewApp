@@ -12,6 +12,8 @@ import 'package:brahmakoshpartners/features/registration/pages/send_otp_number.d
 import 'package:brahmakoshpartners/features/registration/pages/upload_image_screen.dart';
 import 'package:brahmakoshpartners/features/registration/pages/verify_email_otp_screen.dart';
 import 'package:brahmakoshpartners/features/registration/pages/verify_mobile_otp_screen.dart';
+import 'package:brahmakoshpartners/features/notifications/pages/notification_screen.dart';
+import 'package:brahmakoshpartners/features/notifications/pages/notification_detail_screen.dart';
 import 'package:brahmakoshpartners/features/training/pages/training_screen.dart';
 import 'package:get/route_manager.dart';
 
@@ -54,6 +56,18 @@ class AppRoutes {
     GetPage(
       name: AppPages.waitingapproval,
       page: () => WaitingApprovalScreen(),
+    ),
+
+    /// ==========================================================
+    /// Notification Pages
+    /// ==========================================================
+    GetPage(
+      name: AppPages.notificationScreen,
+      page: () => const NotificationScreen(),
+    ),
+    GetPage(
+      name: AppPages.notificationDetail,
+      page: () => const NotificationDetailScreen(),
     ),
   ];
 }

@@ -265,69 +265,73 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) => PopScope(
         canPop: false,
         child: Obx(() {
-        return IncomingRequestDialog(
-          data: (data is Map<String, dynamic>) ? data : <String, dynamic>{},
-          isAccepting: _acceptCtrl.isLoading.value,
-          isRejecting: _rejectCtrl.isLoading.value,
+          return IncomingRequestDialog(
+            data: (data is Map<String, dynamic>) ? data : <String, dynamic>{},
+            isAccepting: _acceptCtrl.isLoading.value,
+            isRejecting: _rejectCtrl.isLoading.value,
 
-          onReject: (reason) async {
-            final requestId = _extractConversationId(data);
-            if (requestId == null || requestId.isEmpty) {
-              Get.snackbar("Error", "requestId missing");
+            onReject: (reason) async {
+              final requestId = _extractConversationId(data);
+              if (requestId == null || requestId.isEmpty) {
+                Get.snackbar("Error", "requestId missing");
+                if (mounted) Navigator.pop(context);
+                return;
+              }
+
+              await _rejectCtrl.reject(requestId: requestId, reason: reason);
+
+              _removeRequest(requestId);
+              _reqCtrl.requests.removeWhere(
+                (r) => r.conversationId == requestId,
+              );
+
+              if (_rejectCtrl.error.value.isNotEmpty) {
+                Get.snackbar("Reject Failed", _rejectCtrl.error.value);
+              }
+
               if (mounted) Navigator.pop(context);
-              return;
-            }
+            },
 
-            await _rejectCtrl.reject(requestId: requestId, reason: reason);
+            onAccept: () async {
+              final requestId = _extractConversationId(data);
+              if (requestId == null || requestId.isEmpty) {
+                Get.snackbar("Error", "requestId missing");
+                if (mounted) Navigator.pop(context);
+                return;
+              }
 
-            _removeRequest(requestId);
-            _reqCtrl.requests.removeWhere((r) => r.conversationId == requestId);
+              await _acceptCtrl.accept(requestId: requestId);
 
-            if (_rejectCtrl.error.value.isNotEmpty) {
-              Get.snackbar("Reject Failed", _rejectCtrl.error.value);
-            }
+              _removeRequest(requestId);
+              _reqCtrl.requests.removeWhere(
+                (r) => r.conversationId == requestId,
+              );
 
-            if (mounted) Navigator.pop(context);
-          },
+              if (_acceptCtrl.error.value.isNotEmpty) {
+                Get.snackbar("Accept Failed", _acceptCtrl.error.value);
+                if (mounted) Navigator.pop(context);
+                return;
+              }
 
-          onAccept: () async {
-            final requestId = _extractConversationId(data);
-            if (requestId == null || requestId.isEmpty) {
-              Get.snackbar("Error", "requestId missing");
+              final accepted = _acceptCtrl.acceptedConversation.value;
+
               if (mounted) Navigator.pop(context);
-              return;
-            }
 
-            await _acceptCtrl.accept(requestId: requestId);
+              final goConvId = accepted?.conversationId ?? requestId;
 
-            _removeRequest(requestId);
-            _reqCtrl.requests.removeWhere((r) => r.conversationId == requestId);
-
-            if (_acceptCtrl.error.value.isNotEmpty) {
-              Get.snackbar("Accept Failed", _acceptCtrl.error.value);
-              if (mounted) Navigator.pop(context);
-              return;
-            }
-
-            final accepted = _acceptCtrl.acceptedConversation.value;
-
-            if (mounted) Navigator.pop(context);
-
-            final goConvId = accepted?.conversationId ?? requestId;
-
-            Get.toNamed(
-              AppPages.chatScreen,
-              arguments: {
-                "conversationId": goConvId,
-                "acceptedConversation": accepted,
-                "rawSocketConversation": (data is Map)
-                    ? data["conversation"]
-                    : null,
-              },
-            );
-          },
-        );
-      }),
+              Get.toNamed(
+                AppPages.chatScreen,
+                arguments: {
+                  "conversationId": goConvId,
+                  "acceptedConversation": accepted,
+                  "rawSocketConversation": (data is Map)
+                      ? data["conversation"]
+                      : null,
+                },
+              );
+            },
+          );
+        }),
       ),
     ).then((_) {
       if (mounted) {
@@ -493,7 +497,7 @@ class _Header extends StatelessWidget {
                 12.horizontalSpace,
               ],
               GestureDetector(
-                onTap: () {},
+                onTap: () => Get.toNamed(AppPages.notificationScreen),
                 child: Container(
                   width: 36.w,
                   height: 36.w,
