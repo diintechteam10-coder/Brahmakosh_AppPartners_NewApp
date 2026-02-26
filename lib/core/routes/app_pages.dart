@@ -12,4 +12,6 @@ class AppPages {
   static String bottomNav = '/bottomNav';
   static String trainingScreen = '/trainingScreen';
   static String uploadProfileImage = '/uploadProfileImage';
+  static String notificationScreen = '/notificationScreen';
+  static String notificationDetail = '/notificationDetail';
 }
