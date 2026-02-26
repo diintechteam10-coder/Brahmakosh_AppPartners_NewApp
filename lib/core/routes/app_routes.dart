@@ -1,4 +1,6 @@
 import 'package:brahmakoshpartners/core/routes/app_pages.dart';
+import 'package:brahmakoshpartners/features/call/pages/active_call_screen.dart';
+import 'package:brahmakoshpartners/features/call/pages/incoming_call_screen.dart';
 import 'package:brahmakoshpartners/features/auth/views/login_screen.dart';
 import 'package:brahmakoshpartners/features/auth/views/splash_screen.dart.dart';
 import 'package:brahmakoshpartners/features/auth/views/waiting_approval_Screen.dart';
@@ -68,6 +70,29 @@ class AppRoutes {
     GetPage(
       name: AppPages.notificationDetail,
       page: () => const NotificationDetailScreen(),
+    ),
+
+    /// ==========================================================
+    /// Voice Call Pages
+    /// ==========================================================
+    GetPage(
+      name: AppPages.incomingCallScreen,
+      page: () {
+        final incomingCall = Get.arguments;
+        return IncomingCallScreen(incomingCall: incomingCall);
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppPages.activeCallScreen,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        return ActiveCallScreen(
+          conversationId: args['conversationId'],
+          callerName: args['callerName'],
+        );
+      },
+      transition: Transition.fadeIn,
     ),
   ];
 }

@@ -59,8 +59,8 @@ class AuthController extends GetxController {
         return false;
       }
 
-      // ❌ Remove websocket connect from here
-      // Get.find<SocketService>().connect(token.trim());
+      // Connect socket after getting token
+      Get.find<SocketService>().connect(token.trim());
 
       return true;
     } on NoInternetException catch (e) {
