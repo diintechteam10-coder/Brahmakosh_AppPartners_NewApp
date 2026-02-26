@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
 import 'package:brahmakoshpartners/core/const/fonts.dart';
 
+import 'withdraw_screen.dart';
+
 class EarningScreen extends StatelessWidget {
   const EarningScreen({super.key});
 
@@ -58,13 +60,8 @@ class EarningScreen extends StatelessWidget {
 
                     32.verticalSpace,
 
-                    /// TOTAL BALANCE GRAPH CARD
+                    /// TOTAL BALANCE AND WALLET CARD
                     _LifetimeEarningsCard(),
-
-                    16.verticalSpace,
-
-                    /// WALLET BALANCE CARD
-                    _WalletBalanceCard(),
 
                     16.verticalSpace,
 
@@ -167,8 +164,11 @@ class _LifetimeEarningsCard extends StatelessWidget {
         border: Border.all(color: Colours.white.withOpacity(0.3), width: 0.5),
       ),
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
-      child: Stack(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Left Side: Total Balance
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -205,140 +205,68 @@ class _LifetimeEarningsCard extends StatelessWidget {
                   ),
                 ),
               ),
-              60.verticalSpace, // Provide enough natural height for the Stack
             ],
           ),
 
-          /// STATIC GRAPH MOCK (Absolute Positioned over Bottom-Right)
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _mockGraphPoint(height: 15.h, label: '6D'),
-                14.horizontalSpace,
-                _mockGraphPoint(height: 25.h, label: '5D'),
-                14.horizontalSpace,
-                _mockGraphPoint(height: 40.h, label: '4D'),
-                14.horizontalSpace,
-                _mockGraphPoint(height: 35.h, label: '3D'),
-                14.horizontalSpace,
-                _mockGraphPoint(height: 50.h, label: '2D'),
-                14.horizontalSpace,
-                _mockGraphPoint(height: 65.h, label: 'Today', isMax: true),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _mockGraphPoint({
-    required double height,
-    required String label,
-    bool isMax = false,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          width: 6.w,
-          height: 6.w,
-          decoration: BoxDecoration(
-            color: Colours.orangeE3940E,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colours.orangeE3940E.withOpacity(0.8),
-                blurRadius: 10,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-        ),
-        8.verticalSpace,
-        Container(
-          width: 1,
-          height: height,
-          color: Colours.white.withOpacity(0.1),
-        ),
-        8.verticalSpace,
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: Colours.whiteE9EAEC.withOpacity(0.6),
-            fontFamily: Fonts.medium,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _WalletBalanceCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-      decoration: BoxDecoration(
-        color: Colours.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: Colours.white.withOpacity(0.3), width: 0.5),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+          // Right Side: Wallet Balance & Withdraw Button
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 'Wallet Balance',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 11.sp,
                   fontFamily: Fonts.bold,
-                  color: Colours.whiteE9EAEC,
+                  color: Colours.whiteE9EAEC.withOpacity(0.8),
                 ),
               ),
-              8.verticalSpace,
+              4.verticalSpace,
               Text(
                 '₹12,450',
                 style: TextStyle(
-                  fontSize: 28.sp,
+                  fontSize: 20.sp,
                   fontFamily: Fonts.bold,
                   color: Colours.white,
                 ),
               ),
-            ],
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: Colours.orangeDE8E0C,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Withdraw to Bank',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: Fonts.medium,
-                    color: Colours.white,
+              12.verticalSpace,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WithdrawScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colours.orangeDE8E0C,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Withdraw to Bank',
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontFamily: Fonts.medium,
+                          color: Colours.white,
+                        ),
+                      ),
+                      4.horizontalSpace,
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colours.white,
+                        size: 8.sp,
+                      ),
+                    ],
                   ),
                 ),
-                4.horizontalSpace,
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colours.white,
-                  size: 10.sp,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
