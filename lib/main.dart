@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:brahmakoshpartners/core/services/app_initializer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:brahmakoshpartners/features/call/listeners/global_call_listener.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +24,6 @@ Future<void> main() async {
   runApp(const BrahmakoshPartners());
 }
 
-
-
 class BrahmakoshPartners extends StatelessWidget {
   const BrahmakoshPartners({super.key});
 
@@ -32,11 +31,13 @@ class BrahmakoshPartners extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(430, 932),
-      child: GetMaterialApp(
-        initialBinding: GlobalBindings(),
-        initialRoute: AppPages.splashScreen,
-        getPages: AppRoutes.routes,
-        debugShowCheckedModeBanner: false,
+      child: GlobalCallListener(
+        child: GetMaterialApp(
+          initialBinding: GlobalBindings(),
+          initialRoute: AppPages.splashScreen,
+          getPages: AppRoutes.routes,
+          debugShowCheckedModeBanner: false,
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:brahmakoshpartners/core/const/fonts.dart';
 import 'package:brahmakoshpartners/core/routes/app_pages.dart';
 import 'package:brahmakoshpartners/core/services/socket/socket_events.dart';
 import 'package:brahmakoshpartners/core/services/socket/socket_service.dart';
+import 'package:brahmakoshpartners/core/services/socket/webrtc_service.dart';
 import 'package:brahmakoshpartners/core/services/tokens.dart';
 import 'package:brahmakoshpartners/features/conversations/repository/conversation_repository.dart';
 import 'package:brahmakoshpartners/features/home/components/incomingRequest_PopUp.dart';
@@ -240,6 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         _socket.connect(token.trim());
+        WebRtcService.I.init();
         await _reqCtrl.fetchRequests();
         _startPolling();
         _checkAndShowNextRequest();
