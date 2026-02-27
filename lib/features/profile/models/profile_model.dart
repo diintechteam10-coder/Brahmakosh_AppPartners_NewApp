@@ -32,7 +32,9 @@ class PartnerProfileData {
   }
 }
 
-// ─── Sub-models ──────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------- */
+/*                                SUB MODELS                                  */
+/* -------------------------------------------------------------------------- */
 
 class LocationInfo {
   final double? latitude;
@@ -43,7 +45,7 @@ class LocationInfo {
   LocationInfo({this.latitude, this.longitude, this.city, this.country});
 
   factory LocationInfo.fromJson(Map<String, dynamic> json) {
-    final coords = json['coordinates'] as Map<String, dynamic>? ?? {};
+    final coords = json['coordinates'] ?? {};
     return LocationInfo(
       latitude: (coords['latitude'] as num?)?.toDouble(),
       longitude: (coords['longitude'] as num?)?.toDouble(),
@@ -55,6 +57,7 @@ class LocationInfo {
 
 class DayAvailability {
   final bool available;
+
   DayAvailability({required this.available});
 
   factory DayAvailability.fromJson(Map<String, dynamic> json) {
@@ -92,17 +95,6 @@ class WorkingHours {
       sunday: DayAvailability.fromJson(json['sunday'] ?? {}),
     );
   }
-
-  /// Helper for UI iteration
-  Map<String, bool> toMap() => {
-    'Monday': monday.available,
-    'Tuesday': tuesday.available,
-    'Wednesday': wednesday.available,
-    'Thursday': thursday.available,
-    'Friday': friday.available,
-    'Saturday': saturday.available,
-    'Sunday': sunday.available,
-  };
 }
 
 class BankDetails {
@@ -171,21 +163,14 @@ class SocialMedia {
       youtube: json['youtube'],
     );
   }
-
-  bool get hasAny =>
-      website != null ||
-      facebook != null ||
-      instagram != null ||
-      twitter != null ||
-      youtube != null;
 }
 
 class PartnerStats {
-  final double totalEarnings;
-  final double thisMonthEarnings;
-  final double lastMonthEarnings;
+  final int totalEarnings;
+  final int thisMonthEarnings;
+  final int lastMonthEarnings;
   final double averageSessionDuration;
-  final double responseTime;
+  final int responseTime;
 
   PartnerStats({
     this.totalEarnings = 0,
@@ -197,12 +182,12 @@ class PartnerStats {
 
   factory PartnerStats.fromJson(Map<String, dynamic> json) {
     return PartnerStats(
-      totalEarnings: (json['totalEarnings'] as num?)?.toDouble() ?? 0,
-      thisMonthEarnings: (json['thisMonthEarnings'] as num?)?.toDouble() ?? 0,
-      lastMonthEarnings: (json['lastMonthEarnings'] as num?)?.toDouble() ?? 0,
+      totalEarnings: (json['totalEarnings'] as num?)?.toInt() ?? 0,
+      thisMonthEarnings: (json['thisMonthEarnings'] as num?)?.toInt() ?? 0,
+      lastMonthEarnings: (json['lastMonthEarnings'] as num?)?.toInt() ?? 0,
       averageSessionDuration:
           (json['averageSessionDuration'] as num?)?.toDouble() ?? 0,
-      responseTime: (json['responseTime'] as num?)?.toDouble() ?? 0,
+      responseTime: (json['responseTime'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -233,66 +218,68 @@ class PartnerSettings {
   }
 }
 
-// ─── Main Partner Model ──────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------- */
+/*                               MAIN PARTNER                                 */
+/* -------------------------------------------------------------------------- */
 
 class Partner {
-  // Identity
   final String id;
   final String name;
   final String email;
   final String phone;
   final String? bio;
-  final String profilePictureUrl;
-  final String? backgroundBanner;
 
-  // Professional
+  final String profilePictureUrl;
+  final String? profilePictureKey;
+  final String? backgroundBanner;
+  final String? backgroundBannerKey;
+
+  final String? clientId;
+  final String? categoryId;
+  final String? role;
+
   final List<String> specialization;
   final List<String> expertise;
   final List<String> languages;
   final List<String> skills;
   final List<String> qualifications;
   final List<String> consultationModes;
+
   final int experience;
   final String? experienceRange;
   final String? expertiseCategory;
 
-  // Pricing
   final int chatCharge;
   final int voiceCharge;
   final int videoCharge;
   final int pricePerSession;
   final String currency;
 
-  // Ratings & Sessions
   final double rating;
   final int totalRatings;
   final int totalSessions;
   final int completedSessions;
 
-  // Status flags
   final bool isActive;
   final bool isVerified;
   final bool isAvailable;
   final bool isBlocked;
   final bool emailVerified;
   final bool phoneVerified;
+
   final String onlineStatus;
   final String verificationStatus;
 
-  // Conversations
   final int activeConversationsCount;
   final int maxConversations;
 
-  // Credits
   final double creditsEarnedTotal;
   final double creditsEarnedBalance;
 
-  // Dates
-  final String? createdAt;
-  final String? lastActiveAt;
-  final String? verifiedAt;
+  final DateTime? createdAt;
+  final DateTime? lastActiveAt;
+  final DateTime? verifiedAt;
 
-  // Sub-models
   final LocationInfo location;
   final WorkingHours workingHours;
   final BankDetails bankDetails;
@@ -308,64 +295,53 @@ class Partner {
     required this.phone,
     this.bio,
     required this.profilePictureUrl,
+    this.profilePictureKey,
     this.backgroundBanner,
+    this.backgroundBannerKey,
+    this.clientId,
+    this.categoryId,
+    this.role,
     required this.specialization,
     required this.expertise,
     required this.languages,
-    this.skills = const [],
-    this.qualifications = const [],
-    this.consultationModes = const [],
+    required this.skills,
+    required this.qualifications,
+    required this.consultationModes,
     required this.experience,
     this.experienceRange,
     this.expertiseCategory,
     required this.chatCharge,
     required this.voiceCharge,
     required this.videoCharge,
-    this.pricePerSession = 0,
+    required this.pricePerSession,
     required this.currency,
-    this.rating = 0,
-    this.totalRatings = 0,
-    this.totalSessions = 0,
-    this.completedSessions = 0,
+    required this.rating,
+    required this.totalRatings,
+    required this.totalSessions,
+    required this.completedSessions,
     required this.isActive,
     required this.isVerified,
-    this.isAvailable = false,
-    this.isBlocked = false,
-    this.emailVerified = false,
-    this.phoneVerified = false,
+    required this.isAvailable,
+    required this.isBlocked,
+    required this.emailVerified,
+    required this.phoneVerified,
     required this.onlineStatus,
-    this.verificationStatus = 'pending',
-    this.activeConversationsCount = 0,
-    this.maxConversations = 15,
-    this.creditsEarnedTotal = 0,
-    this.creditsEarnedBalance = 0,
-    this.createdAt,
-    this.lastActiveAt,
-    this.verifiedAt,
-    LocationInfo? location,
-    WorkingHours? workingHours,
-    BankDetails? bankDetails,
-    Documents? documents,
-    SocialMedia? socialMedia,
-    PartnerStats? stats,
-    PartnerSettings? settings,
-  }) : location = location ?? LocationInfo(),
-       workingHours =
-           workingHours ??
-           WorkingHours(
-             monday: DayAvailability(available: false),
-             tuesday: DayAvailability(available: false),
-             wednesday: DayAvailability(available: false),
-             thursday: DayAvailability(available: false),
-             friday: DayAvailability(available: false),
-             saturday: DayAvailability(available: false),
-             sunday: DayAvailability(available: false),
-           ),
-       bankDetails = bankDetails ?? BankDetails(),
-       documents = documents ?? Documents(),
-       socialMedia = socialMedia ?? SocialMedia(),
-       stats = stats ?? PartnerStats(),
-       settings = settings ?? PartnerSettings();
+    required this.verificationStatus,
+    required this.activeConversationsCount,
+    required this.maxConversations,
+    required this.creditsEarnedTotal,
+    required this.creditsEarnedBalance,
+    required this.createdAt,
+    required this.lastActiveAt,
+    required this.verifiedAt,
+    required this.location,
+    required this.workingHours,
+    required this.bankDetails,
+    required this.documents,
+    required this.socialMedia,
+    required this.stats,
+    required this.settings,
+  });
 
   factory Partner.fromJson(Map<String, dynamic> json) {
     return Partner(
@@ -376,7 +352,12 @@ class Partner {
       bio: json['bio'],
       profilePictureUrl:
           json['profilePictureUrl'] ?? json['profilePicture'] ?? '',
+      profilePictureKey: json['profilePictureKey'],
       backgroundBanner: json['backgroundBanner'],
+      backgroundBannerKey: json['backgroundBannerKey'],
+      clientId: json['clientId'],
+      categoryId: json['categoryId'],
+      role: json['role'],
       specialization: List<String>.from(json['specialization'] ?? []),
       expertise: List<String>.from(json['expertise'] ?? []),
       languages: List<String>.from(json['languages'] ?? []),
@@ -409,30 +390,22 @@ class Partner {
       creditsEarnedTotal: (json['creditsEarnedTotal'] as num?)?.toDouble() ?? 0,
       creditsEarnedBalance:
           (json['creditsEarnedBalance'] as num?)?.toDouble() ?? 0,
-      createdAt: json['createdAt'],
-      lastActiveAt: json['lastActiveAt'],
-      verifiedAt: json['verifiedAt'],
-      location: json['location'] != null
-          ? LocationInfo.fromJson(json['location'])
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
           : null,
-      workingHours: json['workingHours'] != null
-          ? WorkingHours.fromJson(json['workingHours'])
+      lastActiveAt: json['lastActiveAt'] != null
+          ? DateTime.tryParse(json['lastActiveAt'])
           : null,
-      bankDetails: json['bankDetails'] != null
-          ? BankDetails.fromJson(json['bankDetails'])
+      verifiedAt: json['verifiedAt'] != null
+          ? DateTime.tryParse(json['verifiedAt'])
           : null,
-      documents: json['documents'] != null
-          ? Documents.fromJson(json['documents'])
-          : null,
-      socialMedia: json['socialMedia'] != null
-          ? SocialMedia.fromJson(json['socialMedia'])
-          : null,
-      stats: json['stats'] != null
-          ? PartnerStats.fromJson(json['stats'])
-          : null,
-      settings: json['settings'] != null
-          ? PartnerSettings.fromJson(json['settings'])
-          : null,
+      location: LocationInfo.fromJson(json['location'] ?? {}),
+      workingHours: WorkingHours.fromJson(json['workingHours'] ?? {}),
+      bankDetails: BankDetails.fromJson(json['bankDetails'] ?? {}),
+      documents: Documents.fromJson(json['documents'] ?? {}),
+      socialMedia: SocialMedia.fromJson(json['socialMedia'] ?? {}),
+      stats: PartnerStats.fromJson(json['stats'] ?? {}),
+      settings: PartnerSettings.fromJson(json['settings'] ?? {}),
     );
   }
 }

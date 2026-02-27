@@ -471,8 +471,6 @@ class ChatTile extends StatelessWidget {
                 ),
               ],
             ),
-
-          
           ],
         ),
       ),

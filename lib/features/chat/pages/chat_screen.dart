@@ -457,8 +457,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           left: 16.w,
                           right: 16.w,
                           top: 8.h,
-                          bottom:
-                              mq.padding.bottom + 16.h,
+                          bottom: mq.padding.bottom + 16.h,
                         ),
                         child: Container(
                           height: 54.h,
