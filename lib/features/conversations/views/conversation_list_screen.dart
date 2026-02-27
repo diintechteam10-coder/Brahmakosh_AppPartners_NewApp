@@ -22,7 +22,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   int selectedTab = 0;
   // VISUAL LABELS based on mockup. Logical backend mapping remains tied to index implicitly.
-  final tabs = const ['All', 'Chat', 'Audio', 'Video'];
+  final tabs = const ['All', 'Active', 'Unread', 'Completed'];
 
   @override
   void initState() {
@@ -33,6 +33,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
   Future<void> _fetchAll() async {
     final status = _statusForTab(selectedTab);
 
+    // If "Unread" is selected, we fetch all conversations and filter locally
+    // unless the API supports a specific status for it. Here, we fetch all.
     await Future.wait([
       controller.fetchConversations(status: status),
       statsCtrl.fetchStats(),
@@ -40,20 +42,39 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 
   String? _statusForTab(int tabIndex) {
-    if (tabIndex == 1) return 'pending';
-    if (tabIndex == 2) return 'active';
+    // 0: All -> null
+    // 1: Active -> active
+    // 2: Unread -> null (we will filter client-side)
+    // 3: Ended/Completed -> ended
+    if (tabIndex == 1) return 'active';
+    if (tabIndex == 2) return null; // Fetch all, then filter
     if (tabIndex == 3) return 'ended';
     return null;
   }
 
   List<Map<String, dynamic>> _filteredForTab(List<Map<String, dynamic>> list) {
+    if (selectedTab == 1) {
+      // Active tab
+      return list.where((c) {
+        final status = _safeStr(c['status']).toLowerCase();
+        return status == 'active' || status == 'accepted';
+      }).toList();
+    }
     if (selectedTab == 2) {
+      // Unread tab
       return list
           .where(
             (c) =>
                 (c['unreadCount'] ?? 0) is num && (c['unreadCount'] as num) > 0,
           )
           .toList();
+    }
+    if (selectedTab == 3) {
+      // Ended/Completed tab
+      return list.where((c) {
+        final status = _safeStr(c['status']).toLowerCase();
+        return status == 'ended';
+      }).toList();
     }
     return list;
   }
@@ -121,7 +142,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     Row(
                       children: [
                         Text(
-                          'Consultations', // Updated Text
+                          'Chat', // Updated Text
                           style: TextStyle(
                             fontSize: 28.sp,
                             fontFamily: 'Lora', // Updated Font
@@ -206,6 +227,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             itemBuilder: (context, index) {
                               final item = list[index];
 
+                              // Safe string extraction
                               final convId = _safeStr(
                                 item['conversationId'],
                                 fallback: _safeStr(item['_id']),
@@ -226,36 +248,78 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                   _safeStr(item['status']).toLowerCase() ==
                                       'accepted';
 
-                              // Generate mock specifics to match the aesthetic since real data may lack it initially
-                              // e.g. "Rate: ₹50/ Min"
-                              final rateStr = 'Rate: ₹${(index * 5) + 30}/ Min';
-                              // e.g. "+₹750"
-                              final earnedStr = '+₹${(index * 150) + 450}';
+                              // Parse Time
+                              String formattedTime = '';
+                              final rawTime =
+                                  item['lastMessageAt'] ?? item['createdAt'];
+                              if (rawTime != null) {
+                                try {
+                                  final dt = DateTime.parse(
+                                    rawTime.toString(),
+                                  ).toLocal();
+                                  final hour = dt.hour > 12
+                                      ? dt.hour - 12
+                                      : (dt.hour == 0 ? 12 : dt.hour);
+                                  final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+                                  final minute = dt.minute.toString().padLeft(
+                                    2,
+                                    '0',
+                                  );
 
-                              // Round-robin connect types for visually distinguishing UI mock
-                              // Ideally these branch from API type identifiers.
-                              final typeIndex = index % 3;
-                              final typeIcon = typeIndex == 0
-                                  ? Icons.chat_bubble_outline
-                                  : typeIndex == 1
-                                  ? Icons.phone_outlined
-                                  : Icons.videocam_outlined;
-                              final typeLabel = typeIndex == 0
-                                  ? 'Chat'
-                                  : typeIndex == 1
-                                  ? 'Audio'
-                                  : 'Video';
+                                  // Simple date formatting (Ideally use intl package here if available, but keeping it simple)
+                                  final now = DateTime.now();
+                                  if (dt.year == now.year &&
+                                      dt.month == now.month &&
+                                      dt.day == now.day) {
+                                    formattedTime = 'Today $hour:$minute $ampm';
+                                  } else {
+                                    formattedTime =
+                                        '${dt.day}/${dt.month}/${dt.year} $hour:$minute $ampm';
+                                  }
+                                } catch (_) {
+                                  formattedTime = '';
+                                }
+                              }
+
+                              // Extract last message
+                              String lastMsg = '';
+                              if (item['lastMessage'] is Map &&
+                                  item['lastMessage']['content'] != null) {
+                                lastMsg = item['lastMessage']['content']
+                                    .toString();
+                              }
+
+                              // Extract profile pic
+                              String picUrl = '';
+                              if (item['otherUser'] is Map &&
+                                  item['otherUser']['profileImageUrl'] !=
+                                      null) {
+                                picUrl = item['otherUser']['profileImageUrl']
+                                    .toString();
+                              } else if (item['otherUser'] is Map &&
+                                  item['otherUser']['profileImage'] != null) {
+                                picUrl = item['otherUser']['profileImage']
+                                    .toString();
+                              }
+
+                              // Placeholder type badge since response doesn't distinctly have connection type natively at root
+                              final typeIcon = Icons.info_outline;
+                              String typeLabel = _safeStr(item['status']);
+                              if (typeLabel.isNotEmpty) {
+                                typeLabel =
+                                    typeLabel[0].toUpperCase() +
+                                    typeLabel.substring(1);
+                              } else {
+                                typeLabel = 'Unknown';
+                              }
 
                               return ChatTile(
                                 name: name,
-                                time:
-                                    "Today: 10:30 AM - 15 Mins", // UI Mock representation of formatted time
-                                rate: rateStr,
-                                earned: earnedStr,
+                                time: formattedTime,
+                                lastMessage: lastMsg,
                                 typeIcon: typeIcon,
                                 typeLabel: typeLabel,
-                                profilePic:
-                                    '', // Can pass specific URL if available
+                                profilePic: picUrl,
                                 unreadCount: unread,
                                 isCompleted: isCompleted,
                                 isActive: isActive,
@@ -292,8 +356,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
 class ChatTile extends StatelessWidget {
   final String name;
   final String time;
-  final String rate;
-  final String earned;
+  final String lastMessage;
   final IconData typeIcon;
   final String typeLabel;
   final String profilePic;
@@ -307,8 +370,7 @@ class ChatTile extends StatelessWidget {
     super.key,
     required this.name,
     required this.time,
-    required this.rate,
-    required this.earned,
+    required this.lastMessage,
     required this.typeIcon,
     required this.typeLabel,
     required this.profilePic,
@@ -391,46 +453,26 @@ class ChatTile extends StatelessWidget {
                           color: Colours.whiteE9EAEC.withOpacity(0.8),
                         ),
                       ),
-                      8.h.verticalSpace,
-                      Text(
-                        rate,
-                        style: TextStyle(
-                          fontFamily: Fonts.semiBold,
-                          fontSize: 14.sp,
-                          color: Colours.orangeDE8E0C,
+                      if (lastMessage.isNotEmpty) ...[
+                        4.h.verticalSpace,
+                        Text(
+                          lastMessage,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: Fonts.regular,
+                            fontSize: 14.sp,
+                            color: Colours.whiteE9EAEC.withOpacity(0.6),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                /// EARNED AMOUNT (Bottom Right alignment constraint trick via SizedBox)
-                SizedBox(
-                  height: 60.h,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        earned,
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontFamily: Fonts.bold,
-                          color: Colours.orangeFF9F07,
-                        ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
               ],
             ),
 
-            /// COMMUNICATION TYPE BADGE (Absolute Positioned Top-Right)
-            Positioned(
-              right: 0,
-              top: 0,
-              child: _TypeBadge(label: typeLabel, icon: typeIcon),
-            ),
+          
           ],
         ),
       ),
@@ -446,19 +488,23 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generate inner color logic matching the mockup tags
+    // Generate inner color logic matching the mockup tags or status
     Color baseBorderColor;
     Color baseTextColor;
-    if (label.toLowerCase() == 'chat') {
+    final labelLower = label.toLowerCase();
+
+    if (labelLower == 'active' ||
+        labelLower == 'accepted' ||
+        labelLower == 'chat') {
       baseBorderColor = Colours.green26B100;
       baseTextColor = Colours.green26B100;
-    } else if (label.toLowerCase() == 'audio') {
-      baseBorderColor = Colors.blueAccent;
-      baseTextColor = Colors.blueAccent;
+    } else if (labelLower == 'pending' || labelLower == 'audio') {
+      baseBorderColor = Colours.orangeDE8E0C;
+      baseTextColor = Colours.orangeDE8E0C;
     } else {
-      // Video
-      baseBorderColor = Colours.white.withOpacity(0.7);
-      baseTextColor = Colours.white.withOpacity(0.8);
+      // Ended, Unknown, Video
+      baseBorderColor = Colours.white.withOpacity(0.5);
+      baseTextColor = Colours.white.withOpacity(0.7);
     }
 
     return Container(

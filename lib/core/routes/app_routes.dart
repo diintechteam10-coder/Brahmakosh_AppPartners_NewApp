@@ -15,6 +15,7 @@ import 'package:brahmakoshpartners/features/registration/pages/verify_mobile_otp
 import 'package:brahmakoshpartners/features/notifications/pages/notification_screen.dart';
 import 'package:brahmakoshpartners/features/notifications/pages/notification_detail_screen.dart';
 import 'package:brahmakoshpartners/features/training/pages/training_screen.dart';
+import 'package:brahmakoshpartners/features/profile/pages/edit_profile_screen.dart';
 import 'package:get/route_manager.dart';
 
 class AppRoutes {
@@ -57,6 +58,7 @@ class AppRoutes {
       name: AppPages.waitingapproval,
       page: () => WaitingApprovalScreen(),
     ),
+    GetPage(name: AppPages.editProfile, page: () => const EditProfileScreen()),
 
     /// ==========================================================
     /// Notification Pages

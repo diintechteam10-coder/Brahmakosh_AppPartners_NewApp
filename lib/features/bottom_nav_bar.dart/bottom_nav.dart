@@ -145,7 +145,7 @@ class BottomNav extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                label: 'Conversation',
+                label: 'Chat',
               ),
 
               BottomNavigationBarItem(

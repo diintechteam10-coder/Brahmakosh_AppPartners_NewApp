@@ -14,4 +14,5 @@ class AppPages {
   static String uploadProfileImage = '/uploadProfileImage';
   static String notificationScreen = '/notificationScreen';
   static String notificationDetail = '/notificationDetail';
+  static String editProfile = '/editProfile';
 }
