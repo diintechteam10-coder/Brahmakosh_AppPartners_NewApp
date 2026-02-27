@@ -745,8 +745,6 @@ class _IncomingRequestDialogState extends State<IncomingRequestDialog> {
                       ],
                     ),
                   ),
-
-                  // Scrollable Body
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -779,7 +777,6 @@ class _IncomingRequestDialogState extends State<IncomingRequestDialog> {
                         return Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Avatar with rings
                             Container(
                               padding: EdgeInsets.all(4.w),
                               decoration: BoxDecoration(
