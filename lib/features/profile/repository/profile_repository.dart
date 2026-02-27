@@ -30,6 +30,7 @@ class PartnerProfileRepository extends ApiService {
             bio: null,
             profilePictureUrl: '',
             specialization: const [],
+            expertise: const [],
             languages: const [],
             experience: 0,
             chatCharge: 0,
@@ -46,6 +47,55 @@ class PartnerProfileRepository extends ApiService {
     } on DioException catch (e) {
       throw (e.error as Exception?) ??
           Exception(e.message ?? 'Failed to load profile');
+    }
+  }
+
+  /// ✅ UPDATE PARTNER PROFILE
+  /// PUT /api/mobile/partner/profile
+  Future<PartnerProfileResponse> updateProfile(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final Response response = await apiClient.dio.put(
+        "/api/mobile/partner/profile",
+        data: data,
+      );
+
+      final resData = response.data;
+
+      if (resData is Map<String, dynamic>) {
+        return PartnerProfileResponse.fromJson(resData);
+      }
+
+      return PartnerProfileResponse(
+        success: false,
+        message: "Invalid response",
+        data: PartnerProfileData(
+          partner: Partner(
+            id: '',
+            name: '',
+            email: '',
+            phone: '',
+            bio: null,
+            profilePictureUrl: '',
+            specialization: const [],
+            expertise: const [],
+            languages: const [],
+            experience: 0,
+            chatCharge: 0,
+            voiceCharge: 0,
+            videoCharge: 0,
+            currency: 'INR',
+            isActive: false,
+            isVerified: false,
+            onlineStatus: 'offline',
+          ),
+          token: '',
+        ),
+      );
+    } on DioException catch (e) {
+      throw (e.error as Exception?) ??
+          Exception(e.message ?? 'Failed to update profile');
     }
   }
 }

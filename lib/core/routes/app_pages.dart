@@ -16,4 +16,5 @@ class AppPages {
   static String notificationDetail = '/notificationDetail';
   static String incomingCallScreen = '/incomingCallScreen';
   static String activeCallScreen = '/activeCallScreen';
+  static String editProfile = '/editProfile';
 }
