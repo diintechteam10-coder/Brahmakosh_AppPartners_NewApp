@@ -129,7 +129,6 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
         child: Column(
           children: [
             const Spacer(flex: 2),
-            // Caller Avatar
             CircleAvatar(
               radius: 60.r,
               backgroundColor: Colours.grey6B788C,
@@ -159,6 +158,35 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
               ),
               textAlign: TextAlign.center,
             ),
+            if (WebRtcService.I.isRecording) ...[
+              12.verticalSpace,
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 500),
+                opacity: _secondsElapsed % 2 == 0 ? 1.0 : 0.3,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12.w,
+                      height: 12.w,
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    8.horizontalSpace,
+                    Text(
+                      "Recording",
+                      style: TextStyle(
+                        fontFamily: Fonts.medium,
+                        fontSize: 14.sp,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const Spacer(flex: 3),
 
             // Invisible renderer required for WebRTC audio playback on mobile
@@ -171,27 +199,85 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
               ),
             ),
 
-            // End Call Button
             Container(
               margin: EdgeInsets.only(bottom: 60.h),
-              child: GestureDetector(
-                onTap: () async {
-                  await WebRtcService.I.endCall();
-                  // The state listener will pop the screen once state is ended
-                },
-                child: Container(
-                  width: 70.w,
-                  height: 70.w,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.redAccent,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Mute Button
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        WebRtcService.I.toggleMute();
+                      });
+                    },
+                    child: Container(
+                      width: 60.w,
+                      height: 60.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: WebRtcService.I.isMuted
+                            ? Colours.white
+                            : Colours.white.withOpacity(0.2),
+                      ),
+                      child: Icon(
+                        WebRtcService.I.isMuted ? Icons.mic_off : Icons.mic,
+                        color: WebRtcService.I.isMuted
+                            ? Colours.black
+                            : Colours.white,
+                        size: 28.sp,
+                      ),
+                    ),
                   ),
-                  child: Icon(
-                    Icons.call_end,
-                    color: Colours.white,
-                    size: 32.sp,
+
+                  // End Call Button
+                  GestureDetector(
+                    onTap: () async {
+                      await WebRtcService.I.endCall();
+                    },
+                    child: Container(
+                      width: 70.w,
+                      height: 70.w,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.redAccent,
+                      ),
+                      child: Icon(
+                        Icons.call_end,
+                        color: Colours.white,
+                        size: 32.sp,
+                      ),
+                    ),
                   ),
-                ),
+
+                  // Speaker Button
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        WebRtcService.I.toggleSpeaker();
+                      });
+                    },
+                    child: Container(
+                      width: 60.w,
+                      height: 60.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: WebRtcService.I.isSpeakerphoneOn
+                            ? Colours.white
+                            : Colours.white.withOpacity(0.2),
+                      ),
+                      child: Icon(
+                        WebRtcService.I.isSpeakerphoneOn
+                            ? Icons.volume_up
+                            : Icons.volume_down,
+                        color: WebRtcService.I.isSpeakerphoneOn
+                            ? Colours.black
+                            : Colours.white,
+                        size: 28.sp,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
