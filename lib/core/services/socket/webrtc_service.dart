@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../features/call/repository/recording_repository.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'socket_service.dart';
 import 'socket_events.dart';
 
@@ -50,7 +53,17 @@ class WebRtcService {
   IncomingCall? _incomingCall;
   IncomingCall? get incomingCall => _incomingCall;
 
+  bool _isMuted = false;
+  bool get isMuted => _isMuted;
+
+  bool _isSpeakerphoneOn = false;
+  bool get isSpeakerphoneOn => _isSpeakerphoneOn;
+
   final RecordingRepository _recordingRepo = RecordingRepository();
+  MediaRecorder? _recorder;
+  bool _isRecording = false;
+  bool get isRecording => _isRecording;
+  String? _recordingPath;
 
   bool _initialized = false;
 
@@ -105,6 +118,9 @@ class WebRtcService {
 
   void _onRejected(dynamic data) {
     final id = data['conversationId']?.toString();
+    debugPrint(
+      "🛑 WebRtcService: _onRejected received for id: $id, current: $_conversationId",
+    );
     if (id != _conversationId) return;
     _setState(CallState.ended);
     cleanup();
@@ -112,6 +128,9 @@ class WebRtcService {
 
   void _onEnded(dynamic data) {
     final id = data['conversationId']?.toString();
+    debugPrint(
+      "🛑 WebRtcService: _onEnded received for id: $id, current: $_conversationId",
+    );
     if (id != _conversationId) return;
     _setState(CallState.ended);
     cleanup();
@@ -212,6 +231,26 @@ class WebRtcService {
 
     _pc = await createPeerConnection(config);
 
+    _pc?.onIceConnectionState = (state) {
+      debugPrint("🧊 ICE Connection State: ${state.name}");
+      if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected ||
+          state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
+          state == RTCIceConnectionState.RTCIceConnectionStateClosed) {
+        _setState(CallState.ended);
+        cleanup();
+      }
+    };
+
+    _pc?.onConnectionState = (state) {
+      debugPrint("🔌 Peer Connection State: ${state.name}");
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
+          state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+          state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        _setState(CallState.ended);
+        cleanup();
+      }
+    };
+
     _localStream?.getTracks().forEach((track) {
       _pc?.addTrack(track, _localStream!);
     });
@@ -229,6 +268,7 @@ class WebRtcService {
       if (event.streams.isNotEmpty) {
         _remoteStream = event.streams.first;
         _remoteStreamCtrl.add(_remoteStream!);
+        debugPrint("📡 Remote stream received");
       }
     };
   }
@@ -242,19 +282,116 @@ class WebRtcService {
     });
   }
 
-  // ---------------- Recording ----------------
+  // ---------------- Media Controls ----------------
 
+  void toggleMute() {
+    if (_localStream != null) {
+      _isMuted = !_isMuted;
+      _localStream!.getAudioTracks().forEach((track) {
+        track.enabled = !_isMuted;
+      });
+    }
+  }
+
+  void toggleSpeaker() {
+    _isSpeakerphoneOn = !_isSpeakerphoneOn;
+    Helper.setSpeakerphoneOn(_isSpeakerphoneOn);
+  }
+
+  // ---------------- Recording ----------------
   Future<void> _startRecording() async {
-    // Same as your existing code
+    if (_isRecording) return;
+
+    try {
+      if (_localStream == null) {
+        debugPrint("❌ Recording failed: Local stream is null");
+        return;
+      }
+
+      final audioTracks = _localStream!.getAudioTracks();
+      if (audioTracks.isEmpty) {
+        debugPrint("❌ Recording failed: No audio tracks found");
+        return;
+      }
+
+      final dir = await getTemporaryDirectory();
+      _recordingPath =
+          '${dir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.webm';
+
+      _recorder = MediaRecorder();
+
+      await _recorder!.start(
+        _recordingPath!,
+        audioChannel: RecorderAudioChannel.INPUT, // ✅ IMPORTANT
+      );
+
+      _isRecording = true;
+      debugPrint("⏺️ Recording started at $_recordingPath");
+    } catch (e) {
+      debugPrint("❌ Failed to start recording: $e");
+    }
   }
 
   Future<void> _stopAndUploadRecording() async {
-    // Same as your existing code
-  }
+    if (!_isRecording || _recorder == null) return;
 
-  // ---------------- Cleanup ----------------
+    try {
+      debugPrint("⏹️ Stopping recording...");
+      await _recorder!.stop();
+      _isRecording = false;
+
+      final convIdToUpload = _conversationId;
+      if (convIdToUpload == null) {
+        debugPrint("❌ conversationId null, skipping upload");
+        return;
+      }
+
+      final path = _recordingPath;
+      if (path == null) return;
+
+      final file = File(path);
+      if (!await file.exists()) return;
+
+      final fileBytes = await file.readAsBytes();
+      final uploadData = await _recordingRepo.getUploadUrl(
+        conversationId: convIdToUpload,
+      );
+      // final uploadUrl = await _recordingRepo.getUploadUrl(
+      //   conversationId: convIdToUpload,
+      // );
+
+      if (uploadData == null) return;
+
+      await _recordingRepo.uploadRecordingFile(
+        uploadUrl: uploadData['uploadUrl'],
+
+        // uploadUrl: uploadUrl,
+        fileBytes: fileBytes,
+      );
+
+      await _recordingRepo.attachRecordingToConversation(
+        conversationId: convIdToUpload,
+        audioKey: uploadData['audioKey'],
+        audioUrl: uploadData['audioUrl'],
+      );
+
+      await file.delete();
+    } catch (e) {
+      debugPrint("❌ Error while stopping/uploading recording: $e");
+    }
+  }
+  //     // Cleanup temp file
+  //     if (await file.exists()) {
+  //       await file.delete();
+  //       debugPrint("🗑️ WebRtcService: Deleted temp recording file.");
+  //     }
+  //   } catch (e) {
+  //     debugPrint("❌ WebRtcService: Error during stop/upload recording: $e");
+  //   }
+  // }
 
   Future<void> cleanup() async {
+    debugPrint("🧹 WebRtcService: cleanup called.");
     await _localStream?.dispose();
     _localStream = null;
 
@@ -266,11 +403,31 @@ class WebRtcService {
     _incomingCall = null;
     _role = null;
 
+    _isMuted = false;
+    _isSpeakerphoneOn = false;
+    Helper.setSpeakerphoneOn(false);
+
     _setState(CallState.idle);
   }
 
   void _setState(CallState s) {
+    if (_state == s) return; // 👈 THIS LINE FIXES DOUBLE CALL
+
+    debugPrint("🔄 State changed to ${s.name}");
     _state = s;
+
+    if (s == CallState.inCall) {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (_state == CallState.inCall) {
+          _startRecording();
+        }
+      });
+    }
+
+    if (s == CallState.ended) {
+      _stopAndUploadRecording();
+    }
+
     _stateCtrl.add(s);
   }
 }
