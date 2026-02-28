@@ -471,8 +471,34 @@ class ChatTile extends StatelessWidget {
                 ),
               ],
             ),
-
-          
+            Positioned(
+              right: 0,
+              top: 0,
+              child: _TypeBadge(label: typeLabel, icon: typeIcon),
+            ),
+            if (unreadCount > 0)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+                  constraints: BoxConstraints(minWidth: 20.w, minHeight: 20.h),
+                  decoration: BoxDecoration(
+                    color: Colours.orangeDE8E0C,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    unreadCount > 99 ? '99+' : unreadCount.toString(),
+                    style: TextStyle(
+                      fontFamily: Fonts.bold,
+                      fontSize: 10.sp,
+                      color: Colours.white,
+                      height: 1, // center exactly
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

@@ -13,8 +13,8 @@ import '../controller/end_chat_controller.dart';
 import '../models/responses/users_message_response_model.dart';
 import 'package:brahmakoshpartners/features/home/controllers/new_chat_astrology_controller.dart';
 import 'package:brahmakoshpartners/features/home/models/response/conversation_accepted_response.dart';
-import '../components/astrology_detail_dialog.dart';
 import '../components/review_bottom_sheet.dart';
+import '../pages/user_details_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -39,6 +39,9 @@ class _ChatScreenState extends State<ChatScreen> {
   ConversationData? _acceptedData;
 
   Timer? _scrollDebounce;
+  Timer? _chatTimer;
+  final RxString _chatDuration = "00:00".obs;
+  late final ConversationAstrologyController astroCtrl;
 
   @override
   void initState() {
@@ -68,7 +71,16 @@ class _ChatScreenState extends State<ChatScreen> {
       markReadCtrl.markAsRead(conversationId: _conversationId);
     }
 
+    astroCtrl = Get.put(
+      ConversationAstrologyController(),
+      tag: _conversationId,
+    );
+    if (_conversationId.isNotEmpty) {
+      astroCtrl.fetchAstrology(conversationId: _conversationId);
+    }
+
     chatController = Get.put(GetMessageController(), tag: _conversationId);
+    _setupChatTimer();
 
     if (_conversationId.isNotEmpty) {
       chatController.initChat(conversationId: _conversationId).then((_) {
@@ -146,6 +158,92 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _setupChatTimer() {
+    DateTime? startTime;
+    if (_acceptedData?.acceptedAt != null) {
+      startTime = _acceptedData!.acceptedAt;
+    } else if (_conversation != null && _conversation!['acceptedAt'] != null) {
+      startTime = DateTime.tryParse(_conversation!['acceptedAt'].toString());
+    }
+
+    if (startTime == null) return;
+
+    // Ensure we are comparing local time against DateTime.now() exactness
+    startTime = startTime.toLocal();
+
+    void updateDuration() {
+      // Check multiple possible sources for the "ended/completed" status
+      final isEnded =
+          endCtrl.isConversationEnded.value ||
+          _acceptedData?.status.toLowerCase() == 'completed' ||
+          _acceptedData?.status.toLowerCase() == 'ended' ||
+          _conversation?['status']?.toString().toLowerCase() == 'completed' ||
+          _conversation?['status']?.toString().toLowerCase() == 'ended' ||
+          chatController.conversationStatus.value.toLowerCase() ==
+              'completed' ||
+          chatController.conversationStatus.value.toLowerCase() == 'ended';
+
+      // If ended, use fixed duration from sessionDetails
+      if (isEnded) {
+        dynamic rawDurationSeconds =
+            _acceptedData?.sessionDetails.duration ??
+            _conversation?['sessionDetails']?['duration'] ??
+            0;
+
+        int durationSeconds = rawDurationSeconds is int
+            ? rawDurationSeconds
+            : int.tryParse(rawDurationSeconds.toString()) ?? 0;
+
+        if (durationSeconds == 0) {
+          DateTime? endTime;
+          if (_conversation != null && _conversation!['endedAt'] != null) {
+            endTime = DateTime.tryParse(_conversation!['endedAt'].toString());
+          }
+
+          if (endTime != null) {
+            final diff = endTime.toLocal().difference(startTime!);
+            if (!diff.isNegative) {
+              durationSeconds = diff.inSeconds;
+            }
+          }
+        }
+
+        final d = Duration(seconds: durationSeconds);
+        final m = d.inMinutes.toString().padLeft(2, '0');
+        final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+        _chatDuration.value = "$m:$s";
+        _chatTimer?.cancel();
+        return;
+      }
+
+      // Active ticker: exactly since `acceptedAt`
+      final now = DateTime.now();
+      final diff = now.difference(startTime!);
+      if (diff.isNegative) {
+        // If slight server desync where phone clock is slightly behind
+        _chatDuration.value = "00:00";
+        return;
+      }
+
+      final m = diff.inMinutes.toString().padLeft(2, '0');
+      final s = (diff.inSeconds % 60).toString().padLeft(2, '0');
+      _chatDuration.value = "$m:$s";
+    }
+
+    updateDuration();
+    if (_chatTimer == null || !_chatTimer!.isActive) {
+      _chatTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => updateDuration(),
+      );
+    }
+
+    // Listen for end status to freeze timer
+    ever(endCtrl.isConversationEnded, (ended) {
+      if (ended) updateDuration();
+    });
+  }
+
   void _jumpToBottomSoon() {
     _scrollDebounce?.cancel();
     _scrollDebounce = Timer(const Duration(milliseconds: 120), () {
@@ -164,6 +262,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose() {
     _scrollDebounce?.cancel();
+    _chatTimer?.cancel();
     _textController.removeListener(_handleTyping);
     _textController.dispose();
     _scrollController.dispose();
@@ -225,9 +324,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final userName = _getUserName();
     final mq = MediaQuery.of(context);
 
-    // Mock timer based on image 1
-    const mockTimer = "00:24";
-
     return Scaffold(
       backgroundColor: Colours.appBackground, // #120E09
       body: LayoutBuilder(
@@ -263,90 +359,146 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            // Astro logic
-                            if (_conversationId.isNotEmpty) {
-                              final astroCtrl =
-                                  Get.find<ConversationAstrologyController>();
-                              astroCtrl.fetchAstrology(
-                                conversationId: _conversationId,
-                              );
-                              Get.dialog(
-                                AstrologyDetailDialog(
-                                  userName: userName,
-                                  conversationId: _conversationId,
-                                ),
-                              );
-                            }
-                          },
-                          child: Row(
-                            children: [
-                              Container(
-                                height: 40.w,
-                                width: 40.w,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    // Normally NetworkImage. Mocking generic since it's a solid requested design
-                                    image: AssetImage(
-                                      'assets/images/google_logo.png',
-                                    ), // fallback missing
-                                    fit: BoxFit.cover,
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              if (_conversationId.isNotEmpty) {
+                                Get.to(
+                                  () => UserDetailsScreen(
+                                    conversationId: _conversationId,
+                                    userName: userName,
                                   ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  userName.isNotEmpty
-                                      ? userName[0].toUpperCase()
-                                      : 'U',
-                                  style: TextStyle(
-                                    fontFamily: Fonts.bold,
-                                    fontSize: 16.sp,
-                                    color: Colours.white.withOpacity(
-                                      0.0,
-                                    ), // hide text if image fails
-                                  ),
-                                ),
-                              ),
-                              12.horizontalSpace,
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    userName,
-                                    style: TextStyle(
-                                      fontFamily: 'Lora',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18.sp,
-                                      color: Colours.whiteE9EAEC,
+                                );
+                              }
+                            },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 40.w,
+                                  width: 40.w,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      // Normally NetworkImage. Mocking generic since it's a solid requested design
+                                      image: AssetImage(
+                                        'assets/images/google_logo.png',
+                                      ), // fallback missing
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                  2.verticalSpace,
-                                  Row(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    userName.isNotEmpty
+                                        ? userName[0].toUpperCase()
+                                        : 'U',
+                                    style: TextStyle(
+                                      fontFamily: Fonts.bold,
+                                      fontSize: 16.sp,
+                                      color: Colours.white.withOpacity(
+                                        0.0,
+                                      ), // hide text if image fails
+                                    ),
+                                  ),
+                                ),
+                                12.horizontalSpace,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Icon(
-                                        Icons.access_time,
-                                        color: Colours.orangeDE8E0C,
-                                        size: 12.sp,
-                                      ),
-                                      4.horizontalSpace,
                                       Text(
-                                        mockTimer,
+                                        userName,
                                         style: TextStyle(
-                                          fontFamily: Fonts.regular,
-                                          fontSize: 12.sp,
-                                          color: Colours.grey75879A,
+                                          fontFamily: 'Lora',
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18.sp,
+                                          color: Colours.whiteE9EAEC,
                                         ),
                                       ),
+                                      2.verticalSpace,
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.access_time,
+                                            color: Colours.orangeDE8E0C,
+                                            size: 12.sp,
+                                          ),
+                                          4.horizontalSpace,
+                                          Obx(
+                                            () => Text(
+                                              _chatDuration.value,
+                                              style: TextStyle(
+                                                fontFamily: Fonts.regular,
+                                                fontSize: 12.sp,
+                                                color: Colours.grey75879A,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      4.verticalSpace,
+                                      Obx(() {
+                                        final data = astroCtrl
+                                            .astrology
+                                            .value
+                                            ?.userAstrology;
+                                        if (data == null)
+                                          return const SizedBox.shrink();
+
+                                        final items = <String>[];
+                                        if (data.dateOfBirth != null) {
+                                          items.add(
+                                            "DOB: ${data.dateOfBirth!.day}/${data.dateOfBirth!.month}/${data.dateOfBirth!.year}",
+                                          );
+                                        }
+                                        if (data.timeOfBirth.isNotEmpty)
+                                          items.add(
+                                            "Time: ${data.timeOfBirth}",
+                                          );
+                                        if (data.placeOfBirth.isNotEmpty)
+                                          items.add(
+                                            "POB: ${data.placeOfBirth}",
+                                          );
+                                        if (data.zodiacSign.isNotEmpty)
+                                          items.add(
+                                            "Zodiac: ${data.zodiacSign}",
+                                          );
+                                        if (data.moonSign.isNotEmpty)
+                                          items.add("Moon: ${data.moonSign}");
+                                        if (data.ascendant.isNotEmpty)
+                                          items.add(
+                                            "Ascendant: ${data.ascendant}",
+                                          );
+
+                                        if (items.isEmpty)
+                                          return const SizedBox.shrink();
+
+                                        return Wrap(
+                                          spacing: 6.w,
+                                          runSpacing: 4.h,
+                                          children: items
+                                              .map(
+                                                (e) => Text(
+                                                  e,
+                                                  style: TextStyle(
+                                                    fontSize: 11.sp,
+                                                    color: Colours.white
+                                                        .withOpacity(0.6),
+                                                    fontFamily: Fonts.medium,
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                        );
+                                      }),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        const Spacer(),
                         Obx(() {
                           final ended = endCtrl.isConversationEnded.value;
                           final loading = endCtrl.isEnding.value;
@@ -457,8 +609,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           left: 16.w,
                           right: 16.w,
                           top: 8.h,
-                          bottom:
-                              mq.padding.bottom + 16.h,
+                          bottom: mq.padding.bottom + 16.h,
                         ),
                         child: Container(
                           height: 54.h,

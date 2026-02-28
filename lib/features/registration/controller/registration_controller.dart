@@ -669,7 +669,9 @@ class RegistrationController extends GetxController {
   Future<void> pickImage() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 85,
+      imageQuality: 80,
+      maxWidth: 800,
+      maxHeight: 800,
     );
 
     if (image == null) {
@@ -944,6 +946,32 @@ class RegistrationController extends GetxController {
       return false;
     } on ApiException catch (e) {
       Get.snackbar("Error !", e.message);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<bool?> skipImageUpload() async {
+    isLoading.value = true;
+    try {
+      await repository.skipImageUpload();
+
+      // Safe reconnect (if token exists)
+      final token = await Tokens.token;
+      if (token != null && token.isNotEmpty) {
+        Get.find<SocketService>().connect(token);
+      }
+
+      return true;
+    } on NoInternetException catch (e) {
+      Get.snackbar("No Connection", e.toString());
+      return false;
+    } on ApiException catch (e) {
+      Get.snackbar("Error !", e.message);
+      return false;
+    } catch (e) {
+      Get.snackbar("Error !", e.toString());
       return false;
     } finally {
       isLoading.value = false;

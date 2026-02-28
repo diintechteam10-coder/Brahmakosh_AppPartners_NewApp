@@ -122,7 +122,7 @@ class UploadImageScreen extends StatelessWidget {
                 ),
                 child: Obx(
                   () => controller.isLoading.value
-                      ? CircularProgressIndicator()
+                      ? const CircularProgressIndicator()
                       : Text(
                           'Upload Image',
                           style: TextStyle(
@@ -133,6 +133,30 @@ class UploadImageScreen extends StatelessWidget {
                         ),
                 ),
               ),
+            ),
+
+            12.verticalSpace,
+
+            Obx(
+              () => controller.isLoading.value
+                  ? const SizedBox.shrink()
+                  : TextButton(
+                      onPressed: () {
+                        controller.skipImageUpload().then((value) {
+                          if (value == true) {
+                            Get.offAllNamed(AppPages.bottomNav);
+                          }
+                        });
+                      },
+                      child: Text(
+                        'Skip for now',
+                        style: TextStyle(
+                          fontFamily: Fonts.medium,
+                          fontSize: 14.sp,
+                          color: Colours.grey697C86,
+                        ),
+                      ),
+                    ),
             ),
 
             28.verticalSpace,

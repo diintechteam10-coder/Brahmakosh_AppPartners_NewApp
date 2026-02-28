@@ -839,7 +839,7 @@ class _IncomingRequestDialogState extends State<IncomingRequestDialog> {
                             ),
                             32.verticalSpace,
 
-                            // Pill "Incoming Video Request"
+                            // Pill "Incoming Chat Request"
                             Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 24.w,
@@ -856,13 +856,13 @@ class _IncomingRequestDialogState extends State<IncomingRequestDialog> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.videocam_outlined,
+                                    Icons.chat_bubble_outline,
                                     color: Colours.orangeDE8E0C,
                                     size: 20.sp,
                                   ),
                                   8.horizontalSpace,
                                   Text(
-                                    'Incoming Video Request',
+                                    'Incoming Chat Request',
                                     style: TextStyle(
                                       fontFamily: Fonts.bold,
                                       fontSize: 14.sp,

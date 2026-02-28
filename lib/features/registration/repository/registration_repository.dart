@@ -373,7 +373,11 @@ class RegistrationRepository extends ApiService {
       final Response response = await apiClient.dio.post(
         "/api/mobile/partner/register/step4",
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: const Duration(seconds: 120),
+          receiveTimeout: const Duration(seconds: 120),
+        ),
       );
 
       final userResponse = response.data['data'];
@@ -381,9 +385,43 @@ class RegistrationRepository extends ApiService {
       await CurrentUser().save(userData);
     } on DioException catch (e) {
       if (e.response != null) {
-        throw Exception(e.response?.data["message"] ?? "Image upload failed");
+        final errorMsg = e.response?.data;
+        print("DioError Data: $errorMsg");
+        throw Exception(
+          e.response?.data["message"] ?? "Image upload failed: $errorMsg",
+        );
       }
-      throw Exception("Network error");
+      print("DioError Object: ${e.toString()}");
+      print("DioError Inner: ${e.error}");
+      if (e.error is Exception) {
+        throw e.error as Exception;
+      }
+      throw Exception("Network error: ${e.error ?? e.message}");
+    }
+  }
+
+  Future<void> skipImageUpload() async {
+    try {
+      final Response response = await apiClient.dio.post(
+        "/api/mobile/partner/register/step4",
+        data: {}, // No body data for skip
+      );
+
+      final userResponse = response.data['data'];
+      final userData = userResponse['user'] ?? userResponse;
+      await CurrentUser().save(userData);
+    } on DioException catch (e) {
+      if (e.response != null) {
+        final errorMsg = e.response?.data;
+        print("DioError Data: $errorMsg");
+        throw Exception(
+          e.response?.data["message"] ?? "Skip upload failed: $errorMsg",
+        );
+      }
+      if (e.error is Exception) {
+        throw e.error as Exception;
+      }
+      throw Exception("Network error: ${e.error ?? e.message}");
     }
   }
 
