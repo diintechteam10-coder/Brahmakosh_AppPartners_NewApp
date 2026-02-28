@@ -25,8 +25,45 @@ class EarningScreen extends StatelessWidget {
   }
 }
 
-class _EarningView extends StatelessWidget {
+class _EarningView extends StatefulWidget {
   const _EarningView({super.key});
+
+  @override
+  State<_EarningView> createState() => _EarningViewState();
+}
+
+class _EarningViewState extends State<_EarningView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients) {
+      // print("📜 Scroll: $currentScroll / $maxScroll"); // Debug only
+
+      if (_isBottom) {
+        print("📜 [EARNING_VIEW] Bottom reached! Triggering LoadMore...");
+        context.read<EarningBloc>().add(const LoadMoreEarningsEvent());
+      }
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    return currentScroll >= (maxScroll * 0.9);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +81,13 @@ class _EarningView extends StatelessWidget {
               child: BlocBuilder<EarningBloc, EarningState>(
                 builder: (context, state) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.only(
                       left: 20.w,
                       right: 20.w,
                       top: mq.padding.top > 0 ? mq.padding.top + 24.h : 48.h,
-                      bottom:
-                          mq.padding.bottom +
-                          mq.viewInsets.bottom, // ✨ Changed here
+                      bottom: mq.padding.bottom + mq.viewInsets.bottom + 20.h,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,6 +268,15 @@ class _EarningView extends StatelessWidget {
                         ),
                         16.verticalSpace,
                         _buildTransactionsList(state),
+                        if (state.isLoadingMore) ...[
+                          16.verticalSpace,
+                          const Center(
+                            child: CircularProgressIndicator(
+                              color: Colours.orangeFF9F07,
+                            ),
+                          ),
+                          16.verticalSpace,
+                        ],
                       ],
                     ),
                   );

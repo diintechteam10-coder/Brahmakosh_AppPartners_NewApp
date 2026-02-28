@@ -482,6 +482,7 @@ class GetMessageController extends GetxController {
 
   final RxString conversationStatus = ''.obs;
   final RxBool isAccepted = false.obs;
+  final Rxn<DateTime> acceptedAt = Rxn<DateTime>();
 
   late String conversationId;
 
@@ -498,12 +499,27 @@ class GetMessageController extends GetxController {
     final ChatMessagesResponse res = await repository.getMessages(
       conversationId: conversationId,
     );
+    print(
+      "🔄🔄🔄 [GET_MSG_CTRL] initChat Response: ${res.success}, Data: ${res.data != null}",
+    );
+    if (res.data != null) {
+      print(
+        "🔄🔄🔄 [GET_MSG_CTRL] initChat Status: ${res.data?.conversationStatus}",
+      );
+      print(
+        "🔄🔄🔄 [GET_MSG_CTRL] initChat SessionDetails: ${res.data?.sessionDetails?.toJson()}",
+      );
+    }
 
     final list = res.data?.messages ?? <ChatMessage>[];
     messages.assignAll(_deduplicateMessages(list));
 
     conversationStatus.value = res.data?.conversationStatus ?? '';
     isAccepted.value = res.data?.isAccepted ?? false;
+    acceptedAt.value = res.data?.sessionDetails?.startTime;
+    print(
+      "🔄🔄🔄 [GET_MSG_CTRL] initChat for $conversationId - status: ${conversationStatus.value}, acceptedAt: ${acceptedAt.value}",
+    );
 
     // ✅ JOIN ROOM
     socketService.emit(SocketEvents.joinConversation, {
@@ -515,6 +531,13 @@ class GetMessageController extends GetxController {
 
     // ✅ MARK READ
     markRead();
+  }
+
+  Future<void> refreshMessages() async {
+    if (conversationId.isNotEmpty) {
+      debugPrint("🔄 Refreshing messages for $conversationId");
+      await initChat(conversationId: conversationId);
+    }
   }
 
   void _initSocketListeners() {

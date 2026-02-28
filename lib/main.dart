@@ -9,6 +9,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:brahmakoshpartners/core/services/app_initializer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:brahmakoshpartners/features/call/listeners/global_call_listener.dart';
+import 'package:brahmakoshpartners/features/chat/listeners/global_notification_listener.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,9 @@ class BrahmakoshPartners extends StatelessWidget {
       designSize: const Size(430, 932),
       child: GlobalCallListener(
         child: GetMaterialApp(
+          builder: (context, child) {
+            return GlobalNotificationListener(child: child!);
+          },
           initialBinding: GlobalBindings(),
           initialRoute: AppPages.splashScreen,
           getPages: AppRoutes.routes,

@@ -542,146 +542,25 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
                 ),
                 24.verticalSpace,
 
-                // --- SESSION SUMMARY HEADER ---
-                Row(
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      color: const Color(0xFFC97B1A),
-                      size: 24.sp,
-                    ),
-                    8.horizontalSpace,
-                    Text(
-                      "SESSION SUMMARY",
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontFamily: 'Lora',
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFC97B1A), // Browish Orange
-                      ),
-                    ),
-                  ],
-                ),
-                16.verticalSpace,
-
-                // --- SUMMARY DETAILS CARD ---
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent, // Natively drawn on beige
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: Colours.grey75879A.withOpacity(0.2),
-                    ),
-                  ),
+                // --- CENTERED RATING AND FEEDBACK ---
+                Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildSummaryRow(
-                            "Start time",
-                            "03:12 PM",
-                          ), // Mocked to match UI
-                          _buildSummaryRow("End time", "03:34 PM"),
-                        ],
+                      Text(
+                        "Rate your Session",
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontFamily: 'Lora',
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFC97B1A),
+                        ),
                       ),
-                      12.verticalSpace,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildSummaryRow("Duration", "22 Mins"),
-                          _buildSummaryRow("Message", "03"),
-                        ],
-                      ),
-                      16.verticalSpace,
-                      Row(
-                        children: [
-                          // Custom inner pill for tracking earnings prominently
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 6.w,
-                              vertical: 4.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colours.orangeFF9F07,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.currency_rupee,
-                              color: Colours.white,
-                              size: 12.sp,
-                            ),
-                          ),
-                          8.horizontalSpace,
-                          Text(
-                            "Total Price;",
-                            style: TextStyle(
-                              fontFamily: Fonts.medium,
-                              fontSize: 14.sp,
-                              color: Colours.orangeDE8E0C,
-                            ),
-                          ),
-                          4.horizontalSpace,
-                          Text(
-                            "₹225", // Mock price
-                            style: TextStyle(
-                              fontFamily: Fonts.bold,
-                              fontSize: 16.sp,
-                              color: Colours.orangeDE8E0C,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                24.verticalSpace,
+                      24.verticalSpace,
 
-                // --- FEEDBACK HEADER ---
-                Row(
-                  children: [
-                    Icon(
-                      Icons.forum_rounded,
-                      color: const Color(0xFFC97B1A),
-                      size: 24.sp,
-                    ),
-                    8.horizontalSpace,
-                    Text(
-                      "FEEDBACK",
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontFamily: 'Lora',
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFC97B1A),
-                      ),
-                    ),
-                  ],
-                ),
-                16.verticalSpace,
-
-                // --- FEEDBACK CARD (INTERACTIVE) ---
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: const Color(
-                      0xFFFDFBF7,
-                    ), // Brighter white block for input contrast
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: Colours.grey75879A.withOpacity(0.15),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
                       // STARS
                       Obx(() {
                         return Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Row(
                               children: List.generate(5, (index) {
@@ -691,56 +570,60 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
                                 return GestureDetector(
                                   onTap: () => rating.value = starValue,
                                   child: Padding(
-                                    padding: EdgeInsets.only(right: 4.w),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w,
+                                    ),
                                     child: Icon(
                                       Icons.star_rounded,
                                       color: filled
                                           ? Colours.orangeFF9F07
-                                          : Colours.grey637484.withOpacity(0.5),
-                                      size: 20.sp,
+                                          : Colours.grey637484.withOpacity(0.3),
+                                      size: 40.sp,
                                     ),
                                   ),
                                 );
                               }),
                             ),
-                            8.horizontalSpace,
-                            Text(
-                              "${rating.value}.0",
-                              style: TextStyle(
-                                fontFamily: Fonts.bold,
-                                fontSize: 14.sp,
-                                color: Colours.black0F1729,
-                              ),
-                            ),
                           ],
                         );
                       }),
-                      12.verticalSpace,
+                      32.verticalSpace,
+
                       // COMMENT BOX
-                      TextField(
-                        controller: _commentController,
-                        maxLines: 3,
-                        style: TextStyle(
-                          fontFamily: Fonts.regular,
-                          fontSize: 14.sp,
-                          color: Colours.black0F1729,
-                        ),
-                        decoration: InputDecoration(
-                          hintText:
-                              'The consultation was very helpful and accurate...',
-                          hintStyle: TextStyle(
-                            color: Colours.grey75879A,
-                            fontSize: 14.sp,
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFDFBF7),
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                            color: Colours.grey75879A.withOpacity(0.15),
                           ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
+                        ),
+                        child: TextField(
+                          controller: _commentController,
+                          maxLines: 4,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: Fonts.regular,
+                            fontSize: 15.sp,
+                            color: Colours.black0F1729,
+                          ),
+                          decoration: InputDecoration(
+                            hintText:
+                                'Share your feedback about the consultation...',
+                            hintStyle: TextStyle(
+                              color: Colours.grey75879A.withOpacity(0.6),
+                              fontSize: 14.sp,
+                            ),
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                24.verticalSpace,
+                32.verticalSpace,
 
                 // --- SUBMIT COMPONENT ---
                 Obx(() {
@@ -815,36 +698,6 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSummaryRow(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "$label;",
-              style: TextStyle(
-                fontFamily: Fonts.medium,
-                fontSize: 14.sp,
-                color: Colours.grey637484, // Softer grey for label
-              ),
-            ),
-            4.horizontalSpace,
-            Text(
-              value,
-              style: TextStyle(
-                fontFamily: Fonts.bold,
-                fontSize: 14.sp,
-                color: Colours.black0F1729, // Dark bold for value
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

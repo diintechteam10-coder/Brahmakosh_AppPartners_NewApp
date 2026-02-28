@@ -151,6 +151,13 @@ class ConversationController extends GetxController {
 
   RxString _currentFilterStatus = RxString(''); // Track current filter
 
+  // Store handlers for clean removal
+  Function(dynamic)? _newMessageHandler;
+  Function(dynamic)? _requestHandler;
+  Function(dynamic)? _receiptHandler;
+  Function(dynamic)? _statusHandler;
+  Function(dynamic)? _endedHandler;
+
   @override
   void onInit() {
     super.onInit();
@@ -158,36 +165,38 @@ class ConversationController extends GetxController {
   }
 
   void _initSocketListeners() {
-    _socket.on(SocketEvents.newMessage, (data) {
+    _newMessageHandler = (data) {
       if (data is Map<String, dynamic>) {
         _handleNewMessage(data);
       }
-    });
+    };
+    _socket.on(SocketEvents.newMessage, _newMessageHandler!);
 
-    _socket.on(SocketEvents.newConversationRequest, (data) {
-      // Refresh current list instead of forcing "pending"
-      // If user is on "Active" tab, they won't lose their view.
-      // If user is on "Pending" tab, they will see the new request.
+    _requestHandler = (data) {
       fetchConversations(status: _currentFilterStatus.value);
-    });
+    };
+    _socket.on(SocketEvents.newConversationRequest, _requestHandler!);
 
-    _socket.on(SocketEvents.readReceipt, (data) {
+    _receiptHandler = (data) {
       if (data is Map<String, dynamic>) {
         _handleReadReceipt(data);
       }
-    });
+    };
+    _socket.on(SocketEvents.readReceipt, _receiptHandler!);
 
-    _socket.on(SocketEvents.partnerStatusChanged, (data) {
+    _statusHandler = (data) {
       if (data is Map && data['status'] != null) {
         currentStatus.value = data['status'].toString();
       }
-    });
+    };
+    _socket.on(SocketEvents.partnerStatusChanged, _statusHandler!);
 
-    _socket.on(SocketEvents.conversationEnded, (data) {
+    _endedHandler = (data) {
       if (data is Map<String, dynamic>) {
         _handleConversationEnded(data);
       }
-    });
+    };
+    _socket.on(SocketEvents.conversationEnded, _endedHandler!);
   }
 
   void _checkConcurrency() {
@@ -356,10 +365,11 @@ class ConversationController extends GetxController {
 
   @override
   void onClose() {
-    _socket.off(SocketEvents.newMessage);
-    _socket.off(SocketEvents.newConversationRequest);
-    _socket.off(SocketEvents.readReceipt);
-    _socket.off(SocketEvents.partnerStatusChanged);
+    _socket.off(SocketEvents.newMessage, _newMessageHandler);
+    _socket.off(SocketEvents.newConversationRequest, _requestHandler);
+    _socket.off(SocketEvents.readReceipt, _receiptHandler);
+    _socket.off(SocketEvents.partnerStatusChanged, _statusHandler);
+    _socket.off(SocketEvents.conversationEnded, _endedHandler);
     super.onClose();
   }
 }

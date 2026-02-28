@@ -67,8 +67,6 @@
 //   ];
 // }
 
-
-
 part of 'earning_bloc.dart';
 
 class EarningState extends Equatable {
@@ -90,6 +88,11 @@ class EarningState extends Equatable {
   final DateTime? endDate;
   final String? error;
 
+  // 📝 Pagination
+  final int currentPage;
+  final bool hasMore;
+  final bool isLoadingMore;
+
   const EarningState({
     this.isLoading = false,
     this.earnings = const [],
@@ -102,6 +105,9 @@ class EarningState extends Equatable {
     this.startDate,
     this.endDate,
     this.error,
+    this.currentPage = 1,
+    this.hasMore = true,
+    this.isLoadingMore = false,
   });
 
   EarningState copyWith({
@@ -117,12 +123,14 @@ class EarningState extends Equatable {
     DateTime? endDate,
     String? error,
     bool clearError = false,
+    int? currentPage,
+    bool? hasMore,
+    bool? isLoadingMore,
   }) {
     return EarningState(
       isLoading: isLoading ?? this.isLoading,
       earnings: earnings ?? this.earnings,
-      selectedPeriodTotal:
-          selectedPeriodTotal ?? this.selectedPeriodTotal,
+      selectedPeriodTotal: selectedPeriodTotal ?? this.selectedPeriodTotal,
       lifetimeTotal: lifetimeTotal ?? this.lifetimeTotal,
       chatPercentage: chatPercentage ?? this.chatPercentage,
       voicePercentage: voicePercentage ?? this.voicePercentage,
@@ -131,21 +139,27 @@ class EarningState extends Equatable {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       error: clearError ? null : (error ?? this.error),
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 
   @override
   List<Object?> get props => [
-        isLoading,
-        earnings,
-        selectedPeriodTotal,
-        lifetimeTotal,
-        chatPercentage,
-        voicePercentage,
-        videoPercentage,
-        selectedTabIndex,
-        startDate,
-        endDate,
-        error,
-      ];
+    isLoading,
+    earnings,
+    selectedPeriodTotal,
+    lifetimeTotal,
+    chatPercentage,
+    voicePercentage,
+    videoPercentage,
+    selectedTabIndex,
+    startDate,
+    endDate,
+    error,
+    currentPage,
+    hasMore,
+    isLoadingMore,
+  ];
 }

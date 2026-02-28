@@ -568,7 +568,7 @@ class _BirthChartTabState extends State<BirthChartTab> {
           label,
           style: GoogleFonts.lora(
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.black87,
+            color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
           ),
         ),
       ),

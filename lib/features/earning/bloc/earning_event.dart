@@ -31,3 +31,7 @@ class ChangeTimeTabEvent extends EarningEvent {
   @override
   List<Object?> get props => [tabIndex, customStartDate, customEndDate];
 }
+
+class LoadMoreEarningsEvent extends EarningEvent {
+  const LoadMoreEarningsEvent();
+}

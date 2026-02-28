@@ -46,9 +46,9 @@ class _UserDetailsScreenState extends State<UserDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colours.appBackground,
+      backgroundColor: const Color(0xFF0F1115),
       appBar: AppBar(
-        backgroundColor: Colours.appBackground,
+        backgroundColor: const Color(0xFF0F1115),
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -91,22 +91,26 @@ class _UserDetailsScreenState extends State<UserDetailsScreen>
             children: [
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Colours.black1A1A1A,
+                  color: const Color(0xFF1E2329), // Card & Tab Container
                   borderRadius: BorderRadius.circular(30.r),
-                  border: Border.all(
-                    color: Colours.orangeDE8E0C.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
                 ),
                 child: TabBar(
                   controller: _mainTabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
                   indicator: BoxDecoration(
-                    color: Colours.orangeE3940E.withOpacity(0.3),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFF59E0B),
+                        Color(0xFFD97706),
+                      ], // Active Tab Gradient
+                    ),
                     borderRadius: BorderRadius.circular(30.r),
-                    border: Border.all(color: Colours.orangeDE8E0C),
                   ),
-                  labelColor: Colours.orangeDE8E0C,
-                  unselectedLabelColor: Colours.grey75879A,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: const Color(0xFF9CA3AF),
                   labelStyle: TextStyle(
                     fontFamily: Fonts.semiBold,
                     fontSize: 14.sp,
@@ -115,6 +119,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen>
                     fontFamily: Fonts.medium,
                     fontSize: 14.sp,
                   ),
+                  dividerColor: Colors.transparent,
                   tabs: const [
                     Tab(text: "Astrology"),
                     Tab(text: "Numerology"),
@@ -202,24 +207,28 @@ class _AstrologyTabState extends State<_AstrologyTab>
     return Column(
       children: [
         SizedBox(
-          height: 40.h,
+          height: 44.h, // Adjusted height slightly for the pill shape
           child: TabBar(
             controller: _astroTabController,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             dividerColor: Colors.transparent,
             indicatorSize: TabBarIndicatorSize.tab,
+            indicatorPadding: EdgeInsets.symmetric(
+              vertical: 4.h,
+              horizontal: 8.w,
+            ),
             indicator: BoxDecoration(
-              color: Colours.orangeE3940E,
+              color: const Color(0xFF374151), // Pill selection color
               borderRadius: BorderRadius.circular(20.r),
             ),
-            labelColor: Colors.white,
-            unselectedLabelColor: Colours.grey75879A,
+            labelColor: const Color(0xFFFDE68A), // Highlighted Selected
+            unselectedLabelColor: const Color(0xFF9CA3AF),
             labelPadding: EdgeInsets.symmetric(horizontal: 16.w),
-            labelStyle: TextStyle(fontFamily: Fonts.bold, fontSize: 13.sp),
+            labelStyle: TextStyle(fontFamily: Fonts.semiBold, fontSize: 14.sp),
             unselectedLabelStyle: TextStyle(
               fontFamily: Fonts.medium,
-              fontSize: 13.sp,
+              fontSize: 14.sp,
             ),
             tabs: const [
               Tab(text: "Basic Info"),
@@ -294,52 +303,97 @@ class _BasicInfoTab extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329), // Card & Tab Container
             borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: [
               _buildRow("Ascendant", details.ascendant),
+              _buildDivider(),
               _buildRow("Sign", details.sign),
-              _buildRow("Sign Lord", details.signLord),
-              _buildRow("Nakshatra", details.nakshatra),
-              _buildRow("Nakshatra Lord", details.nakshatraLord),
+              _buildDivider(),
+              _buildRow("Sign Lord", details.signLord, isAccent: true),
+              _buildDivider(),
+              _buildRow("Nakshatra", details.nakshatra, isAccent: true),
+              _buildDivider(),
+              _buildRow(
+                "Nakshatra Lord",
+                details.nakshatraLord,
+                isAccent: true,
+              ),
+              _buildDivider(),
               _buildRow("Charan", details.charan),
+              _buildDivider(),
               _buildRow("Yog", details.yog),
+              _buildDivider(),
               _buildRow("Karan", details.karan),
+              _buildDivider(),
               _buildRow("Tithi", details.tithi),
+              _buildDivider(),
               _buildRow("Yunja", details.yunja),
-              _buildRow("Tatva", details.tatva),
+              _buildDivider(),
+              _buildRow("Tatva", details.tatva, isTatva: true),
+              _buildDivider(),
               _buildRow("Name Alphabet", details.nameAlphabet, isLast: true),
             ],
           ),
         ),
 
         if (astro.ghatChakra != null) ...[
-          16.verticalSpace,
+          24.verticalSpace,
           _buildSectionHeader("Panchang / Ghat Chakra"),
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1E2329),
               borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                if (astro.ghatChakra!.month != null)
+                if (astro.ghatChakra!.month != null) ...[
                   _buildRow("Month", astro.ghatChakra!.month),
-                if (astro.ghatChakra!.tithi != null)
+                  _buildDivider(),
+                ],
+                if (astro.ghatChakra!.tithi != null) ...[
                   _buildRow("Tithi", astro.ghatChakra!.tithi),
-                if (astro.ghatChakra!.day != null)
+                  _buildDivider(),
+                ],
+                if (astro.ghatChakra!.day != null) ...[
                   _buildRow("Day", astro.ghatChakra!.day),
-                if (astro.ghatChakra!.nakshatra != null)
+                  _buildDivider(),
+                ],
+                if (astro.ghatChakra!.nakshatra != null) ...[
                   _buildRow("Nakshatra", astro.ghatChakra!.nakshatra),
-                if (astro.ghatChakra!.yog != null)
+                  _buildDivider(),
+                ],
+                if (astro.ghatChakra!.yog != null) ...[
                   _buildRow("Yog", astro.ghatChakra!.yog),
-                if (astro.ghatChakra!.karan != null)
+                  _buildDivider(),
+                ],
+                if (astro.ghatChakra!.karan != null) ...[
                   _buildRow("Karan", astro.ghatChakra!.karan),
-                if (astro.ghatChakra!.pahar != null)
+                  _buildDivider(),
+                ],
+                if (astro.ghatChakra!.pahar != null) ...[
                   _buildRow("Pahar", astro.ghatChakra!.pahar),
+                  _buildDivider(),
+                ],
                 if (astro.ghatChakra!.moon != null)
                   _buildRow("Moon", astro.ghatChakra!.moon, isLast: true),
               ],
@@ -348,13 +402,21 @@ class _BasicInfoTab extends StatelessWidget {
         ],
 
         if (astro.ayanamsha != null && astro.ayanamsha!.isNotEmpty) ...[
-          16.verticalSpace,
+          24.verticalSpace,
           _buildSectionHeader("Ayanamsha"),
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1E2329),
               borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -362,17 +424,22 @@ class _BasicInfoTab extends StatelessWidget {
                   final index = entry.key;
                   final a = entry.value;
                   final isLast = index == astro.ayanamsha!.length - 1;
-                  return _buildRow(
-                    a.type?.replaceAll('_', ' ') ?? "Type",
-                    a.formatted ?? "${a.degree?.toStringAsFixed(2)}°",
-                    isLast: isLast,
+                  return Column(
+                    children: [
+                      _buildRow(
+                        a.type?.replaceAll('_', ' ') ?? "Type",
+                        a.formatted ?? "${a.degree?.toStringAsFixed(2)}°",
+                        isLast: isLast,
+                      ),
+                      if (!isLast) _buildDivider(),
+                    ],
                   );
                 }),
               ],
             ),
           ),
         ],
-        16.verticalSpace,
+        24.verticalSpace,
       ],
     );
   }
@@ -383,32 +450,96 @@ class _BasicInfoTab extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          color: Colours.orangeDE8E0C,
+          color: const Color(0xFF9CA3AF), // Section Header Text (Labels)
           fontFamily: Fonts.bold,
-          fontSize: 20.sp,
+          fontSize: 18.sp,
         ),
       ),
     );
   }
 
-  Widget _buildRow(String label, String? value, {bool isLast = false}) {
+  Widget _buildDivider() {
+    return Divider(
+      color: Colors.white.withOpacity(0.05), // Subtle divider for rows
+      thickness: 1,
+      height: 24.h,
+    );
+  }
+
+  Widget _buildRow(
+    String label,
+    String? value, {
+    bool isLast = false,
+    bool isAccent = false,
+    bool isTatva = false,
+  }) {
+    // If it's a "Tatva" row, we render a special badge.
+    if (isTatva && value != null && value.isNotEmpty) {
+      return Padding(
+        padding: EdgeInsets.zero,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF), // Labels Grey
+                fontSize: 14.sp,
+                fontFamily: Fonts.medium,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: const Color(0xFF1E3A8A),
+                ), // Blue border
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.air, // Basic Wind/Air icon
+                    size: 14.sp,
+                    color: const Color(0xFF60A5FA),
+                  ),
+                  4.horizontalSpace,
+                  Text(
+                    value,
+                    style: TextStyle(
+                      color: const Color(0xFF60A5FA), // Blue Text
+                      fontSize: 14.sp,
+                      fontFamily: Fonts.semiBold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 16.h),
+      padding: EdgeInsets.zero,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: TextStyle(
-              color: Colours.grey75879A,
+              color: const Color(0xFF9CA3AF), // Text (Labels)
               fontSize: 14.sp,
               fontFamily: Fonts.medium,
             ),
           ),
           Text(
-            value ?? "N/A",
+            value ?? "-",
             style: TextStyle(
-              color: Colours.black0F1729,
+              color: isAccent
+                  ? const Color(0xFFFEF3C7)
+                  : const Color(0xFFFFFFFF), // Text Data vs Accent Text
               fontSize: 14.sp,
               fontFamily: Fonts.semiBold,
             ),
@@ -470,8 +601,16 @@ class _PlanetsTabState extends State<_PlanetsTab> {
                   margin: EdgeInsets.only(bottom: 12.h),
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF1E2329), // Updated Card BG
                     borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,7 +664,7 @@ class _PlanetsTabState extends State<_PlanetsTab> {
           style: TextStyle(
             fontFamily: Fonts.bold,
             fontSize: 13.sp,
-            color: isSelected ? Colors.white : Colours.brown432F1B,
+            color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
           ),
         ),
       ),
@@ -546,7 +685,7 @@ class _PlanetInfo extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colours.grey75879A,
+            color: const Color(0xFF9CA3AF), // Grey labels
             fontSize: 12.sp,
             fontFamily: Fonts.medium,
           ),
@@ -555,7 +694,7 @@ class _PlanetInfo extends StatelessWidget {
         Text(
           value ?? "N/A",
           style: TextStyle(
-            color: Colours.black0F1729,
+            color: Colors.white, // White text data
             fontSize: 13.sp,
             fontFamily: Fonts.semiBold,
           ),
@@ -604,17 +743,22 @@ class _BhavChalitTab extends StatelessWidget {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329), // Dark bg for table
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colours.brown432F1B.withValues(alpha: 0.2),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colours.brown432F1B.withValues(alpha: 0.6),
+                  color: const Color(0xFF374151), // Pill/Darker header color
                   borderRadius: BorderRadius.vertical(
                     top: Radius.circular(12.r),
                   ),
@@ -641,7 +785,7 @@ class _BhavChalitTab extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: Colours.grey75879A.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.05),
                         width: i == list.length - 1 ? 0 : 1,
                       ),
                     ),
@@ -654,7 +798,7 @@ class _BhavChalitTab extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: Fonts.bold,
                             fontSize: 14.sp,
-                            color: Colours.black0F1729,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -666,7 +810,7 @@ class _BhavChalitTab extends StatelessWidget {
                               style: TextStyle(
                                 fontFamily: Fonts.bold,
                                 fontSize: 13.sp,
-                                color: Colours.brown432F1B,
+                                color: const Color(0xFFFEF3C7), // Accent yellow
                               ),
                             ),
                             Text(
@@ -674,7 +818,7 @@ class _BhavChalitTab extends StatelessWidget {
                               style: TextStyle(
                                 fontFamily: Fonts.regular,
                                 fontSize: 12.sp,
-                                color: Colours.grey75879A,
+                                color: const Color(0xFF9CA3AF),
                               ),
                             ),
                           ],
@@ -689,7 +833,7 @@ class _BhavChalitTab extends StatelessWidget {
                               style: TextStyle(
                                 fontFamily: Fonts.bold,
                                 fontSize: 13.sp,
-                                color: Colours.brown432F1B,
+                                color: const Color(0xFFFEF3C7),
                               ),
                             ),
                             Text(
@@ -697,7 +841,7 @@ class _BhavChalitTab extends StatelessWidget {
                               style: TextStyle(
                                 fontFamily: Fonts.regular,
                                 fontSize: 12.sp,
-                                color: Colours.grey75879A,
+                                color: const Color(0xFF9CA3AF),
                               ),
                             ),
                           ],
@@ -755,13 +899,14 @@ class _DoshasTab extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E2329),
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -773,7 +918,7 @@ class _DoshasTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.sp,
               fontFamily: Fonts.semiBold,
-              color: Colours.black0F1729,
+              color: Colors.white,
             ),
           ),
           Container(
@@ -949,7 +1094,7 @@ class _DashasTabState extends State<_DashasTab> {
           style: TextStyle(
             fontFamily: Fonts.bold,
             fontSize: 13.sp,
-            color: isSelected ? Colors.white : Colours.brown432F1B,
+            color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
           ),
         ),
       ),
@@ -1153,11 +1298,12 @@ class _DashasTabState extends State<_DashasTab> {
   Widget _buildGenericList(List<_TimelineData> items) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E2329),
         borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1173,9 +1319,7 @@ class _DashasTabState extends State<_DashasTab> {
               border: isLast
                   ? null
                   : Border(
-                      bottom: BorderSide(
-                        color: Colours.grey75879A.withValues(alpha: 0.1),
-                      ),
+                      bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
                     ),
             ),
             child: Row(
@@ -1190,7 +1334,7 @@ class _DashasTabState extends State<_DashasTab> {
                         style: TextStyle(
                           fontFamily: Fonts.bold,
                           fontSize: 16.sp,
-                          color: Colours.brown432F1B,
+                          color: const Color(0xFFFEF3C7),
                         ),
                       ),
                       if (item.duration != null) ...[
@@ -1200,7 +1344,7 @@ class _DashasTabState extends State<_DashasTab> {
                           style: TextStyle(
                             fontFamily: Fonts.medium,
                             fontSize: 13.sp,
-                            color: Colours.grey75879A,
+                            color: const Color(0xFF9CA3AF),
                           ),
                         ),
                       ],
@@ -1217,7 +1361,7 @@ class _DashasTabState extends State<_DashasTab> {
                           style: TextStyle(
                             fontFamily: Fonts.medium,
                             fontSize: 12.sp,
-                            color: Colours.black0F1729,
+                            color: Colors.white,
                           ),
                         ),
                       if (item.end != null) ...[
@@ -1227,7 +1371,7 @@ class _DashasTabState extends State<_DashasTab> {
                           style: TextStyle(
                             fontFamily: Fonts.medium,
                             fontSize: 12.sp,
-                            color: Colours.grey75879A,
+                            color: const Color(0xFF9CA3AF),
                           ),
                         ),
                       ],
@@ -1249,11 +1393,12 @@ class _DashasTabState extends State<_DashasTab> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E2329),
         borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1298,14 +1443,14 @@ class _DashasTabState extends State<_DashasTab> {
                   width: 2.w,
                   color: isFirst
                       ? Colors.transparent
-                      : Colours.grey75879A.withValues(alpha: 0.3),
+                      : const Color(0xFF4B5563), // Line color
                 ),
                 Container(
                   height: 12.h,
                   width: 12.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colours.brown432F1B.withValues(alpha: 0.6),
+                    color: const Color(0xFFFBBF24), // Dot color, Amber 400
                   ),
                 ),
                 Expanded(
@@ -1313,7 +1458,7 @@ class _DashasTabState extends State<_DashasTab> {
                     width: 2.w,
                     color: isLast
                         ? Colors.transparent
-                        : Colours.grey75879A.withValues(alpha: 0.3),
+                        : const Color(0xFF4B5563),
                   ),
                 ),
               ],
@@ -1334,7 +1479,7 @@ class _DashasTabState extends State<_DashasTab> {
                         style: TextStyle(
                           fontFamily: Fonts.semiBold,
                           fontSize: 12.sp,
-                          color: Colours.grey75879A,
+                          color: const Color(0xFF9CA3AF),
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -1344,7 +1489,7 @@ class _DashasTabState extends State<_DashasTab> {
                           style: TextStyle(
                             fontFamily: Fonts.semiBold,
                             fontSize: 12.sp,
-                            color: Colours.orangeE3940E,
+                            color: const Color(0xFFF59E0B),
                           ),
                         ),
                     ],
@@ -1355,7 +1500,7 @@ class _DashasTabState extends State<_DashasTab> {
                     style: TextStyle(
                       fontFamily: Fonts.bold,
                       fontSize: 18.sp,
-                      color: Colours.brown432F1B,
+                      color: Colors.white,
                     ),
                   ),
                   8.verticalSpace,
@@ -1380,15 +1525,16 @@ class _DashasTabState extends State<_DashasTab> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
+        color: const Color(0xFF374151), // Badge bg
         borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: Colours.grey75879A.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Text(
         text,
         style: TextStyle(
           fontFamily: Fonts.medium,
           fontSize: 11.sp,
-          color: Colours.brown432F1B,
+          color: const Color(0xFFD1D5DB), // Light grey string
         ),
       ),
     );
@@ -1434,14 +1580,14 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
                 "Sarvashtakvarga",
                 style: TextStyle(
                   fontFamily: Fonts.bold,
-                  fontSize: 20.sp,
-                  color: Colours.orangeDE8E0C,
+                  fontSize: 18.sp,
+                  color: const Color(0xFFF59E0B),
                 ),
               ),
               Container(
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Colours.orangeE3940E.withValues(alpha: 0.1),
+                  color: Colours.orangeE3940E.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(25.r),
                 ),
                 child: Row(
@@ -1462,7 +1608,7 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
             style: TextStyle(
               fontFamily: Fonts.medium,
               fontSize: 14.sp,
-              color: Colours.grey697C86,
+              color: const Color(0xFF9CA3AF),
               height: 1.5,
             ),
           ),
@@ -1498,7 +1644,7 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
             Icon(
               icon,
               size: 16.sp,
-              color: isSelected ? Colors.white : Colours.grey75879A,
+              color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
             ),
             if (isSelected) ...[
               4.horizontalSpace,
@@ -1508,6 +1654,16 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
                   fontFamily: Fonts.bold,
                   fontSize: 12.sp,
                   color: Colors.white,
+                ),
+              ),
+            ] else ...[
+              4.horizontalSpace,
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: Fonts.medium,
+                  fontSize: 12.sp,
+                  color: const Color(0xFF9CA3AF),
                 ),
               ),
             ],
@@ -1523,15 +1679,15 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329), // Table BG
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colours.grey75879A.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
               headingRowColor: WidgetStateProperty.all(
-                Colours.brown432F1B.withOpacity(0.05),
+                const Color(0xFF374151), // Header BG
               ),
               dataRowMinHeight: 40.h,
               dataRowMaxHeight: 50.h,
@@ -1560,7 +1716,9 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
                         style: TextStyle(
                           fontFamily: Fonts.bold,
                           fontSize: 13.sp,
-                          color: Colours.black0F1729,
+                          color: const Color(
+                            0xFF60A5FA,
+                          ), // Light Blue for visibility
                         ),
                       ),
                     ),
@@ -1629,7 +1787,7 @@ class _SarvashtakTabState extends State<_SarvashtakTab> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329), // Chart BG
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: NorthIndianChart(
@@ -1654,7 +1812,7 @@ class _TableHeading extends StatelessWidget {
       style: TextStyle(
         fontFamily: Fonts.bold,
         fontSize: 14.sp,
-        color: Colours.orangeDE8E0C,
+        color: const Color(0xFFFEF3C7), // Accent text
       ),
     );
   }
@@ -1671,7 +1829,7 @@ class _TableCellValue extends StatelessWidget {
       style: TextStyle(
         fontFamily: Fonts.medium,
         fontSize: 13.sp,
-        color: Colours.grey697C86,
+        color: Colors.white, // Table cell text
       ),
     );
   }
@@ -1717,7 +1875,7 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
               Container(
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Colours.orangeE3940E.withValues(alpha: 0.1),
+                  color: Colours.orangeE3940E.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(25.r),
                 ),
                 child: Row(
@@ -1730,20 +1888,18 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colours.grey75879A.withValues(alpha: 0.05),
+                  color: Colors.white.withOpacity(0.05), // Dropdown container
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedPlanet,
-                    icon: Icon(
-                      Icons.arrow_drop_down,
-                      color: Colours.brown432F1B,
-                    ),
+                    icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+                    dropdownColor: const Color(0xFF1E2329), // Dropdown menu BG
                     style: TextStyle(
                       fontFamily: Fonts.medium,
                       fontSize: 14.sp,
-                      color: Colours.brown432F1B,
+                      color: Colors.white,
                     ),
                     items: widget.planetAshtak!.keys.map((String key) {
                       final displayStr =
@@ -1801,7 +1957,7 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
             Icon(
               icon,
               size: 16.sp,
-              color: isSelected ? Colors.white : Colours.brown432F1B,
+              color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
             ),
             if (isSelected) ...[
               4.horizontalSpace,
@@ -1820,7 +1976,7 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
                 style: TextStyle(
                   fontFamily: Fonts.medium,
                   fontSize: 12.sp,
-                  color: Colours.brown432F1B,
+                  color: const Color(0xFF9CA3AF),
                 ),
               ),
             ],
@@ -1836,17 +1992,15 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329), // Table BG
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colours.grey75879A.withValues(alpha: 0.1),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
               headingRowColor: WidgetStateProperty.all(
-                Colours.brown432F1B.withValues(alpha: 0.05),
+                const Color(0xFF374151), // Header BG
               ),
               dataRowMinHeight: 40.h,
               dataRowMaxHeight: 50.h,
@@ -1860,6 +2014,8 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
                 DataColumn(label: _TableHeading("Ju")),
                 DataColumn(label: _TableHeading("Ve")),
                 DataColumn(label: _TableHeading("Sa")),
+                DataColumn(label: _TableHeading("Asc")),
+                DataColumn(label: _TableHeading("Total")),
               ],
               rows: data.points.entries.map((e) {
                 final String signStr =
@@ -1873,7 +2029,9 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
                         style: TextStyle(
                           fontFamily: Fonts.bold,
                           fontSize: 13.sp,
-                          color: Colours.black0F1729,
+                          color: const Color(
+                            0xFF60A5FA,
+                          ), // Light Blue for visibility
                         ),
                       ),
                     ),
@@ -1884,6 +2042,19 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
                     DataCell(_TableCellValue(pt.jupiter.toString())),
                     DataCell(_TableCellValue(pt.venus.toString())),
                     DataCell(_TableCellValue(pt.saturn.toString())),
+                    DataCell(_TableCellValue(pt.ascendant.toString())),
+                    DataCell(
+                      Text(
+                        pt.total.toString(),
+                        style: TextStyle(
+                          fontFamily: Fonts.bold,
+                          fontSize: 13.sp,
+                          color: const Color(
+                            0xFFF59E0B,
+                          ), // Active Orange Gradient Color
+                        ),
+                      ),
+                    ),
                   ],
                 );
               }).toList(),
@@ -1931,7 +2102,7 @@ class _AshtakvargaTabState extends State<_AshtakvargaTab> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329), // Chart BG
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: NorthIndianChart(
@@ -1983,19 +2154,24 @@ class _RemediesTabState extends State<_RemediesTab>
           height: 40.h,
           margin: EdgeInsets.symmetric(horizontal: 16.w),
           decoration: BoxDecoration(
-            color: Colours.grey75879A.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05), // Remedies TabBar BG
             borderRadius: BorderRadius.circular(25.r),
           ),
           child: TabBar(
             controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
-              color: Colours.orangeE3940E,
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFFF59E0B),
+                  Color(0xFFD97706),
+                ], // Active Tab Gradient
+              ),
               borderRadius: BorderRadius.circular(25.r),
             ),
-            indicatorSize: TabBarIndicatorSize.tab,
             labelPadding: EdgeInsets.zero,
             labelColor: Colors.white,
-            unselectedLabelColor: Colours.grey75879A,
+            unselectedLabelColor: const Color(0xFF9CA3AF),
             labelStyle: TextStyle(fontFamily: Fonts.bold, fontSize: 13.sp),
             unselectedLabelStyle: TextStyle(
               fontFamily: Fonts.medium,
@@ -2034,18 +2210,16 @@ class _RemediesTabState extends State<_RemediesTab>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1E2329), // Remedies container BG
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colours.brown432F1B.withValues(alpha: 0.1),
-              ),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
             child: Text(
               puja.summary!,
               style: TextStyle(
                 fontFamily: Fonts.medium,
                 fontSize: 14.sp,
-                color: Colours.black0F1729,
+                color: Colors.white,
               ),
             ),
           ),
@@ -2057,13 +2231,13 @@ class _RemediesTabState extends State<_RemediesTab>
               margin: EdgeInsets.only(bottom: 12.h),
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF1E2329),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.star, color: Colours.orangeE3940E, size: 20.sp),
+                  Icon(Icons.star, color: const Color(0xFFF59E0B), size: 20.sp),
                   12.horizontalSpace,
                   Expanded(
                     child: Text(
@@ -2071,7 +2245,7 @@ class _RemediesTabState extends State<_RemediesTab>
                       style: TextStyle(
                         fontFamily: Fonts.medium,
                         fontSize: 14.sp,
-                        color: Colours.grey697C86,
+                        color: Colors.white, // Suggestion text
                       ),
                     ),
                   ),
@@ -2128,9 +2302,9 @@ class _RemediesTabState extends State<_RemediesTab>
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E2329),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colours.redC73C3F.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2139,7 +2313,10 @@ class _RemediesTabState extends State<_RemediesTab>
             children: [
               Container(
                 padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: bg.withOpacity(0.2),
+                ),
                 child: Icon(icon, color: iconC, size: 24.sp),
               ),
               12.horizontalSpace,
@@ -2151,7 +2328,7 @@ class _RemediesTabState extends State<_RemediesTab>
                     style: TextStyle(
                       fontFamily: Fonts.bold,
                       fontSize: 13.sp,
-                      color: Colours.orangeDE8E0C,
+                      color: const Color(0xFFF59E0B),
                     ),
                   ),
                   4.verticalSpace,
@@ -2160,7 +2337,7 @@ class _RemediesTabState extends State<_RemediesTab>
                     style: TextStyle(
                       fontFamily: Fonts.semiBold,
                       fontSize: 18.sp,
-                      color: Colours.black0F1729,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -2194,7 +2371,7 @@ class _RemediesTabState extends State<_RemediesTab>
               style: TextStyle(
                 fontFamily: Fonts.medium,
                 fontSize: 14.sp,
-                color: Colours.grey75879A,
+                color: const Color(0xFF9CA3AF),
               ),
             ),
           ),
@@ -2204,7 +2381,7 @@ class _RemediesTabState extends State<_RemediesTab>
               style: TextStyle(
                 fontFamily: isBold ? Fonts.bold : Fonts.medium,
                 fontSize: 14.sp,
-                color: Colours.black0F1729,
+                color: Colors.white,
               ),
             ),
           ),
@@ -2222,11 +2399,9 @@ class _RemediesTabState extends State<_RemediesTab>
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E2329),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colours.brown432F1B.withValues(alpha: 0.1),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -9,10 +9,12 @@ class EarningRepository {
   Future<EarningHistoryResponse?> getEarnings({
     String? startDate,
     String? endDate,
+    int? page,
+    int limit = 10,
   }) async {
     try {
       List<EarningItem> allData = [];
-      int currentPage = 1;
+      int currentPage = page ?? 1;
       int totalPages = 1;
 
       DateTime? filterStart;
@@ -22,13 +24,15 @@ class EarningRepository {
         filterStart = DateTime.parse(startDate);
       }
       if (endDate != null && endDate.isNotEmpty) {
-        // Adjust filterEnd to be end of day
         final dt = DateTime.parse(endDate);
         filterEnd = DateTime(dt.year, dt.month, dt.day, 23, 59, 59);
       }
 
       do {
-        final Map<String, dynamic> queryParameters = {'page': currentPage};
+        final Map<String, dynamic> queryParameters = {
+          'page': currentPage,
+          'limit': limit,
+        };
 
         final response = await apiClient.dio.get(
           '/api/chat/credits/history/partner',
@@ -41,7 +45,9 @@ class EarningRepository {
           );
 
           if (historyResponse.success) {
-            for (var item in historyResponse.data) {
+            final items = historyResponse.data;
+
+            for (var item in items) {
               if (item.createdAt != null) {
                 final itemDate = item.createdAt!.toLocal();
                 bool include = true;
@@ -57,9 +63,7 @@ class EarningRepository {
                   allData.add(item);
                 }
 
-                // If we've reached data older than our start filter, we can stop paginating early
                 if (filterStart != null && itemDate.isBefore(filterStart)) {
-                  // Stop fetching older pages to save API calls
                   totalPages = currentPage;
                   break;
                 }
@@ -73,6 +77,9 @@ class EarningRepository {
             } else {
               break;
             }
+
+            // If we only requested one page, stop here
+            if (page != null) break;
           } else {
             break;
           }
@@ -83,15 +90,29 @@ class EarningRepository {
         currentPage++;
       } while (currentPage <= totalPages);
 
-      return EarningHistoryResponse(
-        success: true,
-        data: allData,
-        meta: MetaData(
+      MetaData? finalMeta;
+      if (page != null) {
+        // Find the actual response to get meta
+        // (In our case, it's already updated from historyResponse.meta inside the loop)
+        finalMeta = MetaData(
+          page: page,
+          limit: limit,
+          total: allData.length, // local count for this page
+          totalPages: totalPages,
+        );
+      } else {
+        finalMeta = MetaData(
           page: 1,
           limit: allData.length,
           total: allData.length,
           totalPages: 1,
-        ),
+        );
+      }
+
+      return EarningHistoryResponse(
+        success: true,
+        data: allData,
+        meta: finalMeta,
       );
     } on DioException catch (e) {
       logger.e("EarningRepository error: ${e.message}");

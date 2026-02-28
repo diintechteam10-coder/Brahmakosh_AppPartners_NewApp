@@ -62,6 +62,7 @@ dependencies:
   pretty_dio_logger: ^1.4.0
   # just_audio: ^0.10.5
   audioplayers: ^6.5.1
+  cached_network_image: ^3.4.1
 
 
 dev_dependencies:

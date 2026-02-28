@@ -13,6 +13,7 @@ import '../controller/end_chat_controller.dart';
 import '../models/responses/users_message_response_model.dart';
 import 'package:brahmakoshpartners/features/home/controllers/new_chat_astrology_controller.dart';
 import 'package:brahmakoshpartners/features/home/models/response/conversation_accepted_response.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../components/review_bottom_sheet.dart';
 import '../pages/user_details_screen.dart';
 
@@ -41,10 +42,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Timer? _scrollDebounce;
   Timer? _chatTimer;
   final RxString _chatDuration = "00:00".obs;
+  DateTime? _argAcceptedAt;
   late final ConversationAstrologyController astroCtrl;
 
   @override
   void initState() {
+    print("🚀🚀🚀 [CHAT_SCREEN] initState STARTING for ${Get.arguments}");
     super.initState();
 
     final args = (Get.arguments is Map)
@@ -59,6 +62,11 @@ class _ChatScreenState extends State<ChatScreen> {
     } else if (args['rawSocketConversation'] is Map) {
       _conversation = (args['rawSocketConversation'] as Map)
           .cast<String, dynamic>();
+    }
+
+    // NEW: Also check for explicit acceptedAt in args (from notification)
+    if (args['acceptedAt'] != null) {
+      _argAcceptedAt = DateTime.tryParse(args['acceptedAt'].toString());
     }
 
     // Handle object conversation
@@ -159,89 +167,149 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _setupChatTimer() {
-    DateTime? startTime;
+    print("🔔🔔🔔 [CHAT_TIMER] Calling _setupChatTimer for $_conversationId");
+    // 1. Listen for changes in acceptedAt from the controller
+    ever(chatController.acceptedAt, (DateTime? startTime) {
+      print("🔔🔔🔔 [CHAT_TIMER] acceptedAt CHANGED: $startTime");
+      if (startTime != null) {
+        _startTimerHelper(startTime);
+      }
+    });
+
+    // 2. Check if we have initial time from arguments
+    DateTime? initialTime;
     if (_acceptedData?.acceptedAt != null) {
-      startTime = _acceptedData!.acceptedAt;
+      print("🔔🔔🔔 [CHAT_TIMER] Using initialTime from _acceptedData");
+      initialTime = _acceptedData!.acceptedAt;
     } else if (_conversation != null && _conversation!['acceptedAt'] != null) {
-      startTime = DateTime.tryParse(_conversation!['acceptedAt'].toString());
-    }
-
-    if (startTime == null) return;
-
-    // Ensure we are comparing local time against DateTime.now() exactness
-    startTime = startTime.toLocal();
-
-    void updateDuration() {
-      // Check multiple possible sources for the "ended/completed" status
-      final isEnded =
-          endCtrl.isConversationEnded.value ||
-          _acceptedData?.status.toLowerCase() == 'completed' ||
-          _acceptedData?.status.toLowerCase() == 'ended' ||
-          _conversation?['status']?.toString().toLowerCase() == 'completed' ||
-          _conversation?['status']?.toString().toLowerCase() == 'ended' ||
-          chatController.conversationStatus.value.toLowerCase() ==
-              'completed' ||
-          chatController.conversationStatus.value.toLowerCase() == 'ended';
-
-      // If ended, use fixed duration from sessionDetails
-      if (isEnded) {
-        dynamic rawDurationSeconds =
-            _acceptedData?.sessionDetails.duration ??
-            _conversation?['sessionDetails']?['duration'] ??
-            0;
-
-        int durationSeconds = rawDurationSeconds is int
-            ? rawDurationSeconds
-            : int.tryParse(rawDurationSeconds.toString()) ?? 0;
-
-        if (durationSeconds == 0) {
-          DateTime? endTime;
-          if (_conversation != null && _conversation!['endedAt'] != null) {
-            endTime = DateTime.tryParse(_conversation!['endedAt'].toString());
-          }
-
-          if (endTime != null) {
-            final diff = endTime.toLocal().difference(startTime!);
-            if (!diff.isNegative) {
-              durationSeconds = diff.inSeconds;
+      print("🔔🔔🔔 [CHAT_TIMER] Using initialTime from _conversation");
+      initialTime = DateTime.tryParse(_conversation!['acceptedAt'].toString());
+    } else if (_argAcceptedAt != null) {
+      print(
+        "🔔🔔🔔 [CHAT_TIMER] Using initialTime from arguments (_argAcceptedAt)",
+      );
+      initialTime = _argAcceptedAt;
+    } else if (chatController.acceptedAt.value != null) {
+      print(
+        "🔔🔔🔔 [CHAT_TIMER] Using initialTime from chatController.acceptedAt.value",
+      );
+      initialTime = chatController.acceptedAt.value;
+    } else {
+      // LAST RESORT FALLBACK: Extract timestamp from conversationId
+      // Structure: PART1_PART2_TIMESTAMP (ms)
+      try {
+        final parts = _conversationId.split('_');
+        if (parts.length >= 3) {
+          final lastPart = parts.last;
+          if (lastPart.length >= 13) {
+            final ts = int.tryParse(lastPart.substring(0, 13));
+            if (ts != null) {
+              initialTime = DateTime.fromMillisecondsSinceEpoch(ts);
+              print(
+                "🔔🔔🔔 [CHAT_TIMER] Using initialTime from conversationId suffix: $initialTime",
+              );
             }
           }
         }
-
-        final d = Duration(seconds: durationSeconds);
-        final m = d.inMinutes.toString().padLeft(2, '0');
-        final s = (d.inSeconds % 60).toString().padLeft(2, '0');
-        _chatDuration.value = "$m:$s";
-        _chatTimer?.cancel();
-        return;
+      } catch (e) {
+        print("🔔🔔🔔 [CHAT_TIMER] Failed to extract time from ID: $e");
       }
-
-      // Active ticker: exactly since `acceptedAt`
-      final now = DateTime.now();
-      final diff = now.difference(startTime!);
-      if (diff.isNegative) {
-        // If slight server desync where phone clock is slightly behind
-        _chatDuration.value = "00:00";
-        return;
-      }
-
-      final m = diff.inMinutes.toString().padLeft(2, '0');
-      final s = (diff.inSeconds % 60).toString().padLeft(2, '0');
-      _chatDuration.value = "$m:$s";
     }
 
-    updateDuration();
+    print("🔔🔔🔔 [CHAT_TIMER] Initial Time resolved: $initialTime");
+
+    if (initialTime != null) {
+      _startTimerHelper(initialTime);
+    }
+    // 3. Keep listening for end status to freeze timer
+    ever(endCtrl.isConversationEnded, (ended) {
+      if (ended) {
+        // Force one last update to show final duration
+        if (chatController.acceptedAt.value != null) {
+          _updateDuration(chatController.acceptedAt.value!);
+        }
+      }
+    });
+  }
+
+  void _startTimerHelper(DateTime startTime) {
+    print("🔔🔔🔔 [CHAT_TIMER] _startTimerHelper EXECUTING with $startTime");
+    _chatTimer?.cancel();
+    _updateDuration(startTime);
+
     if (_chatTimer == null || !_chatTimer!.isActive) {
       _chatTimer = Timer.periodic(
         const Duration(seconds: 1),
-        (_) => updateDuration(),
+        (_) => _updateDuration(startTime),
       );
     }
+  }
 
-    // Listen for end status to freeze timer
-    ever(endCtrl.isConversationEnded, (ended) {
-      if (ended) updateDuration();
-    });
+  void _updateDuration(DateTime startTime) {
+    final localStartTime = startTime.toLocal();
+
+    final isEndedValue =
+        endCtrl.isConversationEnded.value ||
+        _acceptedData?.status.toLowerCase() == 'completed' ||
+        _acceptedData?.status.toLowerCase() == 'ended' ||
+        _conversation?['status']?.toString().toLowerCase() == 'completed' ||
+        _conversation?['status']?.toString().toLowerCase() == 'ended' ||
+        chatController.conversationStatus.value.toLowerCase() == 'completed' ||
+        chatController.conversationStatus.value.toLowerCase() == 'ended';
+
+    if (isEndedValue) {
+      print(
+        "🔔🔔🔔 [CHAT_TIMER] DONE: Conversation status is ENDED. Stopping timer.",
+      );
+      dynamic rawDurationSeconds =
+          _acceptedData?.sessionDetails.duration ??
+          _conversation?['sessionDetails']?['duration'] ??
+          0;
+
+      int durationSeconds = rawDurationSeconds is int
+          ? rawDurationSeconds
+          : int.tryParse(rawDurationSeconds.toString()) ?? 0;
+
+      if (durationSeconds == 0) {
+        DateTime? endTime;
+        if (_conversation != null && _conversation!['endedAt'] != null) {
+          endTime = DateTime.tryParse(_conversation!['endedAt'].toString());
+        }
+
+        if (endTime != null) {
+          final diff = endTime.toLocal().difference(localStartTime);
+          if (!diff.isNegative) {
+            durationSeconds = diff.inSeconds;
+          }
+        }
+      }
+
+      final d = Duration(seconds: durationSeconds);
+      final m = d.inMinutes.toString().padLeft(2, '0');
+      final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+      _chatDuration.value = "$m:$s";
+      _chatTimer?.cancel();
+      return;
+    }
+
+    // Active ticker: exactly since `acceptedAt`
+    final now = DateTime.now();
+    final diff = now.difference(localStartTime);
+    if (diff.isNegative) {
+      print(
+        "🔔🔔🔔 [CHAT_TIMER] TICK: DIFF IS NEGATIVE: ${diff.inSeconds}s (likely server/local clock drift)",
+      );
+      _chatDuration.value = "00:00";
+      return;
+    }
+
+    final m = diff.inMinutes.toString().padLeft(2, '0');
+    final s = (diff.inSeconds % 60).toString().padLeft(2, '0');
+    _chatDuration.value = "$m:$s";
+    // Avoid spamming logs every second, but log occasionally
+    if (diff.inSeconds % 10 == 0) {
+      print("🔔🔔🔔 [CHAT_TIMER] TICK: $m:$s (diff: ${diff.inSeconds}s)");
+    }
   }
 
   void _jumpToBottomSoon() {
@@ -315,6 +383,43 @@ class _ChatScreenState extends State<ChatScreen> {
     return 'User';
   }
 
+  String? _getUserImage() {
+    // 1. Try from ConversationData object
+    if (_acceptedData != null) {
+      final img = _acceptedData!.userId.profilePicture;
+      if (img != null && img.isNotEmpty) return img;
+    }
+
+    // 2. Try from Map
+    if (_conversation != null) {
+      final userId = _conversation!['userId'];
+      if (userId is Map) {
+        final profile = userId['profile'];
+        if (profile is Map) {
+          final img = (profile['profilePicture'] ?? profile['image'])
+              ?.toString();
+          if (img != null && img.isNotEmpty) return img;
+        }
+        final img = (userId['profilePicture'] ?? userId['image'])?.toString();
+        if (img != null && img.isNotEmpty) return img;
+      }
+      final otherUser = _conversation!['otherUser'];
+      if (otherUser is Map) {
+        final profile = otherUser['profile'];
+        if (profile is Map) {
+          final img = (profile['profilePicture'] ?? profile['image'])
+              ?.toString();
+          if (img != null && img.isNotEmpty) return img;
+        }
+        final img = (otherUser['profilePicture'] ?? otherUser['image'])
+            ?.toString();
+        if (img != null && img.isNotEmpty) return img;
+      }
+    }
+
+    return null;
+  }
+
   bool _isMe(ChatMessage msg) {
     return (msg.senderModel ?? '').toLowerCase() == 'partner';
   }
@@ -377,28 +482,58 @@ class _ChatScreenState extends State<ChatScreen> {
                                 Container(
                                   height: 40.w,
                                   width: 40.w,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      // Normally NetworkImage. Mocking generic since it's a solid requested design
-                                      image: AssetImage(
-                                        'assets/images/google_logo.png',
-                                      ), // fallback missing
-                                      fit: BoxFit.cover,
-                                    ),
+                                    color: Colours.blue1D283A,
                                   ),
                                   alignment: Alignment.center,
-                                  child: Text(
-                                    userName.isNotEmpty
-                                        ? userName[0].toUpperCase()
-                                        : 'U',
-                                    style: TextStyle(
-                                      fontFamily: Fonts.bold,
-                                      fontSize: 16.sp,
-                                      color: Colours.white.withOpacity(
-                                        0.0,
-                                      ), // hide text if image fails
-                                    ),
+                                  child: ClipOval(
+                                    child: _getUserImage() != null
+                                        ? CachedNetworkImage(
+                                            imageUrl: _getUserImage()!,
+                                            height: 40.w,
+                                            width: 40.w,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Container(
+                                                  color: Colours.blue1D283A,
+                                                  child: Icon(
+                                                    Icons.person,
+                                                    color: Colours.white,
+                                                    size: 20.sp,
+                                                  ),
+                                                ),
+                                            errorWidget:
+                                                (
+                                                  context,
+                                                  url,
+                                                  error,
+                                                ) => Container(
+                                                  color: Colours.blue1D283A,
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    userName.isNotEmpty
+                                                        ? userName[0]
+                                                              .toUpperCase()
+                                                        : 'U',
+                                                    style: TextStyle(
+                                                      fontFamily: Fonts.bold,
+                                                      fontSize: 16.sp,
+                                                      color: Colours.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                          )
+                                        : Text(
+                                            userName.isNotEmpty
+                                                ? userName[0].toUpperCase()
+                                                : 'U',
+                                            style: TextStyle(
+                                              fontFamily: Fonts.bold,
+                                              fontSize: 16.sp,
+                                              color: Colours.white,
+                                            ),
+                                          ),
                                   ),
                                 ),
                                 12.horizontalSpace,
@@ -559,42 +694,59 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Obx(() {
                       final list = chatController.messages;
 
-                      return ListView.builder(
-                        controller: _scrollController,
-                        reverse: true,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 12.h,
-                        ),
-                        itemCount: list.length,
-                        itemBuilder: (context, index) {
-                          // reverse index logic
-                          final item = list[list.length - 1 - index];
+                      return RefreshIndicator(
+                        onRefresh: () => chatController.refreshMessages(),
+                        color: Colours.orangeDE8E0C,
+                        backgroundColor: Colours.appBackground,
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          reverse: true,
+                          // Ensure scrollable even if list is short for pull-to-refresh
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          itemCount: list.length,
+                          itemBuilder: (context, index) {
+                            // reverse index logic
+                            final item = list[list.length - 1 - index];
 
-                          final text = _safeStr(item.content);
-                          final isMe = _isMe(item);
-                          final id = item.id;
+                            final text = _safeStr(item.content);
+                            final isMe = _isMe(item);
+                            final id = item.id;
 
-                          return Obx(() {
-                            String status = sendCtrl.statusForId(id);
+                            return Obx(() {
+                              String status = sendCtrl.statusForId(id);
 
-                            if (status.isEmpty) {
-                              if (item.isRead) {
-                                status = 'read';
-                              } else if (item.isDelivered) {
-                                status = 'delivered';
-                              } else if (item.id.length > 20) {
-                                status = 'sent';
+                              if (status.isEmpty) {
+                                if (item.isRead) {
+                                  status = 'read';
+                                } else if (item.isDelivered) {
+                                  status = 'delivered';
+                                } else if (item.id.length > 20) {
+                                  status = 'sent';
+                                }
                               }
-                            }
 
-                            return ChatBubble(
-                              text: text,
-                              isMe: isMe,
-                              status: status.isEmpty ? null : status,
-                            );
-                          });
-                        },
+                              final profileImg =
+                                  item.senderId.profilePicture ??
+                                  item
+                                      .senderId
+                                      .profile
+                                      ?.gowthra; // Gowthra isn't image but let's see senderId
+
+                              return ChatBubble(
+                                text: text,
+                                isMe: isMe,
+                                status: status.isEmpty ? null : status,
+                                imageUrl: isMe
+                                    ? null
+                                    : (item.senderId.profilePicture),
+                              );
+                            });
+                          },
+                        ),
                       );
                     }),
                   ),
@@ -873,12 +1025,14 @@ class ChatBubble extends StatelessWidget {
   final String text;
   final bool isMe;
   final String? status;
+  final String? imageUrl;
 
   const ChatBubble({
     super.key,
     required this.text,
     required this.isMe,
     this.status,
+    this.imageUrl,
   });
 
   Icon _tick() {
@@ -899,8 +1053,7 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String mockTime =
-        "3:12 PM"; // Mocked to represent the UI image perfectly
+    const String mockTime = "3:12 PM";
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -908,8 +1061,7 @@ class ChatBubble extends StatelessWidget {
         mainAxisAlignment: isMe
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment
-            .start, // Align to top of bubble since user avatar is top-aligned
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // INCOMING AVATAR
           if (!isMe) ...[
@@ -919,74 +1071,111 @@ class ChatBubble extends StatelessWidget {
               margin: EdgeInsets.only(right: 12.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colours.blue1D283A, // Fallback underlying color
+                color: Colours.blue1D283A,
               ),
-              clipBehavior: Clip.antiAlias,
-              child: Image.asset(
-                'assets/images/google_logo.png',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Center(
-                  child: Icon(Icons.person, color: Colours.white, size: 20.sp),
-                ),
+              alignment: Alignment.center,
+              child: ClipOval(
+                child: imageUrl != null && imageUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl!,
+                        height: 38.w,
+                        width: 38.w,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colours.blue1D283A,
+                          child: Icon(
+                            Icons.person,
+                            color: Colours.white,
+                            size: 20.sp,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colours.blue1D283A,
+                          child: Icon(
+                            Icons.person,
+                            color: Colours.white,
+                            size: 20.sp,
+                          ),
+                        ),
+                      )
+                    : Icon(Icons.person, color: Colours.white, size: 20.sp),
               ),
             ),
           ],
 
           Flexible(
-            child: Container(
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
-              decoration: BoxDecoration(
-                color: const Color(
-                  0xFFE2890C,
-                ).withOpacity(0.2), // Dark brownish-orange tint on the black bg
-                borderRadius: BorderRadius.only(
-                  topLeft: isMe
-                      ? Radius.circular(16.r)
-                      : Radius.circular(
-                          4.r,
-                        ), // More flat on the edge connected to avatar
-                  topRight: isMe ? Radius.circular(4.r) : Radius.circular(16.r),
-                  bottomRight: Radius.circular(16.r),
-                  bottomLeft: Radius.circular(16.r),
-                ),
-                border: Border(
-                  left: BorderSide(
-                    color: const Color(0xFFE2890C),
-                    width: 3.w,
-                  ), // The solid vertical stripe in the design!
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    text,
-                    style: TextStyle(
-                      fontFamily: Fonts.regular,
-                      fontSize: 14.sp,
-                      color: Colours.whiteE9EAEC,
-                      height: 1.4,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
+                    decoration: BoxDecoration(
+                      color: isMe
+                          ? const Color(
+                              0xFF673F05,
+                            ) // Brownish-orange for outgoing
+                          : const Color(
+                              0xFF232A34,
+                            ), // Dark blueish-grey for incoming
+                      borderRadius: BorderRadius.only(
+                        topLeft: isMe
+                            ? Radius.circular(16.r)
+                            : Radius.circular(4.r),
+                        topRight: isMe
+                            ? Radius.circular(4.r)
+                            : Radius.circular(16.r),
+                        bottomRight: Radius.circular(16.r),
+                        bottomLeft: Radius.circular(16.r),
+                      ),
+                      border: Border(
+                        left: isMe
+                            ? BorderSide.none
+                            : BorderSide(
+                                color: const Color(0xFF374151),
+                                width: 3.w,
+                              ),
+                        right: isMe
+                            ? BorderSide(
+                                color: const Color(0xFFE2890C),
+                                width: 3.w,
+                              )
+                            : BorderSide.none,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          text,
+                          style: TextStyle(
+                            fontFamily: Fonts.regular,
+                            fontSize: 14.sp,
+                            color: Colours.whiteE9EAEC,
+                            height: 1.4,
+                          ),
+                        ),
+                        8.verticalSpace,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              mockTime,
+                              style: TextStyle(
+                                fontFamily: Fonts.regular,
+                                fontSize: 11.sp,
+                                color: Colours.grey75879A.withOpacity(0.8),
+                              ),
+                            ),
+                            if (isMe) ...[4.horizontalSpace, _tick()],
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  8.verticalSpace,
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      const Spacer(), // Force time to right edge of bubble
-                      Text(
-                        mockTime,
-                        style: TextStyle(
-                          fontFamily: Fonts.regular,
-                          fontSize: 11.sp,
-                          color: Colours.grey75879A.withOpacity(0.8),
-                        ),
-                      ),
-                      if (isMe) ...[4.horizontalSpace, _tick()],
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 
@@ -998,15 +1187,34 @@ class ChatBubble extends StatelessWidget {
               margin: EdgeInsets.only(left: 12.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colours.blue151E30, // Fallback
+                color: Colours.blue151E30,
               ),
-              clipBehavior: Clip.antiAlias,
-              child: Image.asset(
-                'assets/images/google_logo.png',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Center(
-                  child: Icon(Icons.person, color: Colours.white, size: 20.sp),
-                ),
+              alignment: Alignment.center,
+              child: ClipOval(
+                child: imageUrl != null && imageUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl!,
+                        height: 38.w,
+                        width: 38.w,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colours.blue151E30,
+                          child: Icon(
+                            Icons.person,
+                            color: Colours.white,
+                            size: 20.sp,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colours.blue151E30,
+                          child: Icon(
+                            Icons.person,
+                            color: Colours.white,
+                            size: 20.sp,
+                          ),
+                        ),
+                      )
+                    : Icon(Icons.person, color: Colours.white, size: 20.sp),
               ),
             ),
           ],

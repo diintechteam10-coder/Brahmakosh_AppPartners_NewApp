@@ -19,6 +19,7 @@ class ConversationAcceptedResponse {
     );
   }
 }
+
 class ConversationData {
   final String id;
   final String conversationId;
@@ -54,8 +55,9 @@ class ConversationData {
       conversationId: json['conversationId'] ?? '',
       status: json['status'] ?? '',
       isAcceptedByPartner: json['isAcceptedByPartner'] ?? false,
-      acceptedAt:
-          json['acceptedAt'] != null ? DateTime.parse(json['acceptedAt']) : null,
+      acceptedAt: json['acceptedAt'] != null
+          ? DateTime.parse(json['acceptedAt'])
+          : null,
       partnerId: Partner.fromJson(json['partnerId']),
       userId: User.fromJson(json['userId']),
       sessionDetails: SessionDetails.fromJson(json['sessionDetails']),
@@ -65,6 +67,7 @@ class ConversationData {
     );
   }
 }
+
 class Partner {
   final String id;
   final String name;
@@ -93,22 +96,27 @@ class Partner {
       email: json['email'] ?? '',
       profilePicture: json['profilePicture'] ?? '',
       specialization:
-          (json['specialization'] as List?)?.map((e) => e.toString()).toList() ??
-              [],
+          (json['specialization'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       rating: (json['rating'] as num?)?.toInt() ?? 0,
       onlineStatus: json['onlineStatus'] ?? '',
       isAvailable: json['isAvailable'] ?? false,
     );
   }
 }
+
 class User {
   final String id;
   final String email;
+  final String? profilePicture;
   final UserProfile profile;
 
   User({
     required this.id,
     required this.email,
+    this.profilePicture,
     required this.profile,
   });
 
@@ -116,6 +124,7 @@ class User {
     return User(
       id: json['_id'] ?? '',
       email: json['email'] ?? '',
+      profilePicture: json['profilePicture'] as String?,
       profile: UserProfile.fromJson(json['profile']),
     );
   }
@@ -152,6 +161,7 @@ class UserProfile {
     );
   }
 }
+
 class SessionDetails {
   final int duration;
   final int messagesCount;
@@ -177,26 +187,26 @@ class SessionDetails {
     return SessionDetails(
       duration: (json['duration'] as num?)?.toInt() ?? 0,
       messagesCount: (json['messagesCount'] as num?)?.toInt() ?? 0,
-      startTime:
-          json['startTime'] != null ? DateTime.parse(json['startTime']) : null,
+      startTime: json['startTime'] != null
+          ? DateTime.parse(json['startTime'])
+          : null,
       endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
       creditsUsed: (json['creditsUsed'] as num?)?.toInt() ?? 0,
-      partnerCreditsEarned: (json['partnerCreditsEarned'] as num?)?.toInt() ?? 0,
+      partnerCreditsEarned:
+          (json['partnerCreditsEarned'] as num?)?.toInt() ?? 0,
       userRatePerMinute: (json['userRatePerMinute'] as num?)?.toInt() ?? 0,
-      partnerRatePerMinute: (json['partnerRatePerMinute'] as num?)?.toInt() ?? 0,
+      partnerRatePerMinute:
+          (json['partnerRatePerMinute'] as num?)?.toInt() ?? 0,
     );
   }
 }
+
 class Payment {
   final int amount;
   final String currency;
   final String status;
 
-  Payment({
-    required this.amount,
-    required this.currency,
-    required this.status,
-  });
+  Payment({required this.amount, required this.currency, required this.status});
 
   factory Payment.fromJson(Map<String, dynamic> json) {
     return Payment(
@@ -211,10 +221,7 @@ class Rating {
   final RatingInfo byUser;
   final RatingInfo byPartner;
 
-  Rating({
-    required this.byUser,
-    required this.byPartner,
-  });
+  Rating({required this.byUser, required this.byPartner});
 
   factory Rating.fromJson(Map<String, dynamic> json) {
     return Rating(
@@ -237,8 +244,7 @@ class RatingInfo {
       stars: (json['stars'] as num?)?.toInt(),
       feedback: json['feedback'],
       satisfaction: json['satisfaction'],
-      ratedAt:
-          json['ratedAt'] != null ? DateTime.parse(json['ratedAt']) : null,
+      ratedAt: json['ratedAt'] != null ? DateTime.parse(json['ratedAt']) : null,
     );
   }
 }
@@ -247,10 +253,7 @@ class UnreadCount {
   final int partner;
   final int user;
 
-  UnreadCount({
-    required this.partner,
-    required this.user,
-  });
+  UnreadCount({required this.partner, required this.user});
 
   factory UnreadCount.fromJson(Map<String, dynamic> json) {
     return UnreadCount(

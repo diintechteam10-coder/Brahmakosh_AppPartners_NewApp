@@ -157,6 +157,10 @@ class EndChatController extends GetxController {
 
   Timer? _debounce;
 
+  // Store handlers for clean removal
+  Function(dynamic)? _endedHandler;
+  Function(dynamic)? _failedHandler;
+
   void init({
     required String conversationId,
     VoidCallback? onEnded,
@@ -170,20 +174,20 @@ class EndChatController extends GetxController {
   }
 
   void _initSocketListeners() {
-    socketService.off(SocketEvents.conversationEnded);
-    socketService.on(SocketEvents.conversationEnded, (data) {
+    _endedHandler = (data) {
       endStatus.value = 'ended';
       onEnded?.call();
-    });
+    };
+    socketService.on(SocketEvents.conversationEnded, _endedHandler!);
 
-    socketService.off(SocketEvents.conversationEndFailed);
-    socketService.on(SocketEvents.conversationEndFailed, (data) {
+    _failedHandler = (data) {
       endStatus.value = 'failed';
       final msg = (data is Map && data['message'] != null)
           ? data['message'].toString()
           : 'Failed to end chat';
       onError?.call(msg);
-    });
+    };
+    socketService.on(SocketEvents.conversationEndFailed, _failedHandler!);
   }
 
   Future<ConversationEndResponse?> endChatHybrid({
@@ -244,8 +248,8 @@ class EndChatController extends GetxController {
   @override
   void onClose() {
     _debounce?.cancel();
-    socketService.off(SocketEvents.conversationEnded);
-    socketService.off(SocketEvents.conversationEndFailed);
+    socketService.off(SocketEvents.conversationEnded, _endedHandler);
+    socketService.off(SocketEvents.conversationEndFailed, _failedHandler);
     super.onClose();
   }
 }
