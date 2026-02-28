@@ -1,9 +1,9 @@
 import 'package:brahmakoshpartners/core/services/tokens.dart';
 import 'package:brahmakoshpartners/core/const/app_urls.dart';
 import 'package:dio/dio.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../globals/logger.dart';
 import 'dio_error_mapper.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class ApiClient {
   late final Dio dio;

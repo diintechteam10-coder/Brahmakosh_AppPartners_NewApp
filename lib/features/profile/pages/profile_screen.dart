@@ -906,87 +906,87 @@ class _ChipSection extends StatelessWidget {
 // 7. WORKING HOURS CARD
 // =============================================================================
 
-class _WorkingHoursCard extends StatelessWidget {
-  final WorkingHours workingHours;
-  const _WorkingHoursCard({required this.workingHours});
+// class _WorkingHoursCard extends StatelessWidget {
+//   final WorkingHours workingHours;
+//   const _WorkingHoursCard({required this.workingHours});
 
-  @override
-  Widget build(BuildContext context) {
-    final schedule = workingHours.toMap();
+//   @override
+//   Widget build(BuildContext context) {
+//     final schedule = workingHours.toMap();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(title: 'Working Hours'),
-        16.verticalSpace,
-        _GlassCard(
-          child: Column(
-            children: schedule.entries.map((entry) {
-              final isAvailable = entry.value;
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.h),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 100.w,
-                      child: Text(
-                        entry.key,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontFamily: Fonts.medium,
-                          color: Colours.whiteE9EAEC,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 4.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isAvailable
-                            ? Colours.green2CB780.withOpacity(0.15)
-                            : Colours.redC73C3F.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6.w,
-                            height: 6.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isAvailable
-                                  ? Colours.green2CB780
-                                  : Colours.redC73C3F,
-                            ),
-                          ),
-                          6.horizontalSpace,
-                          Text(
-                            isAvailable ? 'Available' : 'Off',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              fontFamily: Fonts.medium,
-                              color: isAvailable
-                                  ? Colours.green2CB780
-                                  : Colours.redC73C3F,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         _SectionHeader(title: 'Working Hours'),
+//         16.verticalSpace,
+//         _GlassCard(
+//           child: Column(
+//             children: schedule.entries.map((entry) {
+//               final isAvailable = entry.value;
+//               return Padding(
+//                 padding: EdgeInsets.symmetric(vertical: 8.h),
+//                 child: Row(
+//                   children: [
+//                     SizedBox(
+//                       width: 100.w,
+//                       child: Text(
+//                         entry.key,
+//                         style: TextStyle(
+//                           fontSize: 14.sp,
+//                           fontFamily: Fonts.medium,
+//                           color: Colours.whiteE9EAEC,
+//                         ),
+//                       ),
+//                     ),
+//                     const Spacer(),
+//                     Container(
+//                       padding: EdgeInsets.symmetric(
+//                         horizontal: 12.w,
+//                         vertical: 4.h,
+//                       ),
+//                       decoration: BoxDecoration(
+//                         color: isAvailable
+//                             ? Colours.green2CB780.withOpacity(0.15)
+//                             : Colours.redC73C3F.withOpacity(0.15),
+//                         borderRadius: BorderRadius.circular(8.r),
+//                       ),
+//                       child: Row(
+//                         mainAxisSize: MainAxisSize.min,
+//                         children: [
+//                           Container(
+//                             width: 6.w,
+//                             height: 6.w,
+//                             decoration: BoxDecoration(
+//                               shape: BoxShape.circle,
+//                               color: isAvailable
+//                                   ? Colours.green2CB780
+//                                   : Colours.redC73C3F,
+//                             ),
+//                           ),
+//                           6.horizontalSpace,
+//                           Text(
+//                             isAvailable ? 'Available' : 'Off',
+//                             style: TextStyle(
+//                               fontSize: 12.sp,
+//                               fontFamily: Fonts.medium,
+//                               color: isAvailable
+//                                   ? Colours.green2CB780
+//                                   : Colours.redC73C3F,
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }).toList(),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
 
 // =============================================================================
 // 9. SOCIAL MEDIA CARD

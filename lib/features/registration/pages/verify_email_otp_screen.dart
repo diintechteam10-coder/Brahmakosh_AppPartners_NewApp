@@ -5,6 +5,11 @@ import 'package:brahmakoshpartners/features/registration/controller/registration
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get/get.dart' as import_get;
+import 'package:brahmakoshpartners/core/services/current_user.dart'
+    as import_user;
+import 'package:brahmakoshpartners/features/auth/controller/auth_controller.dart'
+    as import_auth;
 
 class VerifyEmailOtpScreen extends StatelessWidget {
   VerifyEmailOtpScreen({super.key});
@@ -68,7 +73,10 @@ class VerifyEmailOtpScreen extends StatelessWidget {
                       ],
                     ),
                     alignment: Alignment.center,
-                      child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
+                    child: Image.asset(
+                      "assets/images/logo-removebg.png",
+                      fit: BoxFit.cover,
+                    ),
                   ),
 
                   24.h.verticalSpace,
@@ -160,7 +168,29 @@ class VerifyEmailOtpScreen extends StatelessWidget {
                                     )
                                     .then((e) {
                                       if (e == true) {
-                                        Get.toNamed(AppPages.sendOtpNumber);
+                                        // 1. Check if they already exist fully
+                                        final userDetails =
+                                            import_user.CurrentUser()
+                                                .userDetails;
+                                        final int step =
+                                            userDetails['registrationStep'] ??
+                                            userDetails['user']?['registrationStep'] ??
+                                            1;
+                                        final bool isComplete =
+                                            userDetails['registrationComplete'] ??
+                                            userDetails['user']?['registrationComplete'] ??
+                                            false;
+
+                                        if (step >= 4 || isComplete) {
+                                          // 2. Safely log them in via the App Open method
+                                          import_get.Get.find<
+                                                import_auth.AuthController
+                                              >()
+                                              .handleAppOpen();
+                                        } else {
+                                          // 3. Normal flow: they are a new user
+                                          Get.toNamed(AppPages.sendOtpNumber);
+                                        }
                                       }
                                     });
                               },

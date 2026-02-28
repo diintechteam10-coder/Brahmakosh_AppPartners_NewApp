@@ -433,72 +433,82 @@ class ChatTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       4.verticalSpace,
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontFamily: Fonts.bold,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16.sp,
-                          color: Colours.white,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: TextStyle(
+                                fontFamily: Fonts.bold,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16.sp,
+                                color: Colours.white,
+                              ),
+                            ),
+                          ),
+                          _TypeBadge(label: typeLabel, icon: typeIcon),
+                        ],
                       ),
                       6.h.verticalSpace,
-                      Text(
-                        time,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: Fonts.medium,
-                          fontSize: 13.sp,
-                          color: Colours.whiteE9EAEC.withOpacity(0.8),
-                        ),
-                      ),
-                      if (lastMessage.isNotEmpty) ...[
-                        4.h.verticalSpace,
-                        Text(
-                          lastMessage,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: Fonts.regular,
-                            fontSize: 14.sp,
-                            color: Colours.whiteE9EAEC.withOpacity(0.6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  time,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: Fonts.medium,
+                                    fontSize: 13.sp,
+                                    color: Colours.whiteE9EAEC.withOpacity(0.8),
+                                  ),
+                                ),
+                                if (lastMessage.isNotEmpty) ...[
+                                  4.h.verticalSpace,
+                                  Text(
+                                    lastMessage,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: Fonts.regular,
+                                      fontSize: 14.sp,
+                                      color: Colours.whiteE9EAEC.withOpacity(
+                                        0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          if (unreadCount > 0)
+                            Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: const BoxDecoration(
+                                color: Colours.orangeFF9F07,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                unreadCount.toString(),
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontFamily: Fonts.bold,
+                                  color: Colours.black0E0E0E,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: _TypeBadge(label: typeLabel, icon: typeIcon),
-            ),
-            if (unreadCount > 0)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
-                  constraints: BoxConstraints(minWidth: 20.w, minHeight: 20.h),
-                  decoration: BoxDecoration(
-                    color: Colours.orangeDE8E0C,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    unreadCount > 99 ? '99+' : unreadCount.toString(),
-                    style: TextStyle(
-                      fontFamily: Fonts.bold,
-                      fontSize: 10.sp,
-                      color: Colours.white,
-                      height: 1, // center exactly
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

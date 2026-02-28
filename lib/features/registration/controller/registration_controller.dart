@@ -495,6 +495,7 @@
 //   }
 // }
 
+import 'package:brahmakoshpartners/features/auth/controller/auth_controller.dart';
 import 'dart:io';
 
 import 'package:brahmakoshpartners/core/errors/exception.dart';
@@ -702,7 +703,17 @@ class RegistrationController extends GetxController {
       snackPosition: SnackPosition.TOP,
     );
 
-    Get.toNamed(AppPages.waitingapproval);
+    Get.defaultDialog(
+      title: "Profile Under Review",
+      middleText:
+          "Your profile is currently under review. You will be notified once it is approved.",
+      textConfirm: "OK",
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        Get.back();
+        Get.offAllNamed(AppPages.waitingapproval);
+      },
+    );
   }
 
   String? otpValidator(String? value) {
@@ -728,6 +739,33 @@ class RegistrationController extends GetxController {
     isLoading.value = true;
     try {
       this.email = email;
+
+      // 1. Check if user already exists
+      try {
+        print("📡 [Debugger] Checking if user exists: $email");
+        await repository.checkEmailAndGetToken(email: email);
+
+        // If it succeeds, user exists and checkEmailAndGetToken already saved user/token
+        isLoading.value = false;
+
+        Get.defaultDialog(
+          title: "Account Exists",
+          middleText:
+              "This email is already registered. Would you like to login instead?",
+          textConfirm: "Login",
+          textCancel: "Cancel",
+          confirmTextColor: Colors.white,
+          onConfirm: () {
+            Get.back();
+            Get.find<AuthController>().routeUserBasedOnStatus();
+          },
+        );
+        return false;
+      } catch (e) {
+        // User doesn't exist or API error, proceed with OTP
+        print("📡 [Debugger] User not found or error, proceeding: $e");
+      }
+
       await repository.sendOtpToEmail(email: email, password: password);
       return true;
     } on NoInternetException catch (e) {

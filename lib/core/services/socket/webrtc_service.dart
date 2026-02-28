@@ -322,7 +322,7 @@ class WebRtcService {
 
       await _recorder!.start(
         _recordingPath!,
-        audioChannel: RecorderAudioChannel.INPUT, // ✅ IMPORTANT
+        audioChannel: RecorderAudioChannel.INPUT,
       );
 
       _isRecording = true;

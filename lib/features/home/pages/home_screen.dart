@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../profile/controller/profile_controller.dart';
@@ -562,7 +563,8 @@ class _CenterContent extends StatelessWidget {
                 iconContainerColor: Colours.white,
                 iconColor: Colours.orangeDE8E0C,
                 title: 'Total Earnings',
-                value: '+₹${profileCtrl.totalEarnings.value.toInt()}',
+                value:
+                    '+₹${NumberFormat('#,##0').format(profileCtrl.partner.value?.stats.totalEarnings ?? 0.0)}',
                 valueColor: Colours.green26B100,
                 badgeText: '+12.5% this week',
                 badgeColor: Colours.green26B100,

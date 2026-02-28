@@ -1,9 +1,12 @@
-import 'package:brahmakoshpartners/core/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
 import 'package:brahmakoshpartners/core/const/fonts.dart';
-import 'package:get/route_manager.dart';
+
+import 'package:get/get.dart' as import_get;
+import 'package:brahmakoshpartners/features/auth/controller/auth_controller.dart'
+    as import_auth;
+import 'package:brahmakoshpartners/core/routes/app_pages.dart' as import_routes;
 
 class WaitingApprovalScreen extends StatelessWidget {
   const WaitingApprovalScreen({super.key});
@@ -14,8 +17,7 @@ class WaitingApprovalScreen extends StatelessWidget {
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
-          // TEMP: allow moving forward
-          Get.offAllNamed(AppPages.bottomNav);
+          // Future real logic if any
         },
         child: Container(
           decoration: const BoxDecoration(
@@ -118,6 +120,71 @@ class WaitingApprovalScreen extends StatelessWidget {
                         fontFamily: Fonts.light,
                         fontSize: 12.sp,
                         color: Colours.grey667993,
+                      ),
+                    ),
+
+                    30.h.verticalSpace,
+
+                    /// CHECK STATUS BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          import_get.Get.find<import_auth.AuthController>()
+                              .handleAppOpen();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colours.orangeFF9F07,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25.r),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Check Status',
+                          style: TextStyle(
+                            fontFamily: Fonts.bold,
+                            fontSize: 16.sp,
+                            color: Colours.black0F1729,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    16.h.verticalSpace,
+
+                    /// RETURN TO LOGIN BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          import_get.Get.find<import_auth.AuthController>()
+                              .signOut();
+                          import_get.Get.offAllNamed(
+                            import_routes.AppPages.loginScreen,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colours.orangeFF9F07,
+                          side: const BorderSide(
+                            color: Colours.orangeFF9F07,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25.r),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Return to Login',
+                          style: TextStyle(
+                            fontFamily: Fonts.medium,
+                            fontSize: 16.sp,
+                          ),
+                        ),
                       ),
                     ),
                   ],

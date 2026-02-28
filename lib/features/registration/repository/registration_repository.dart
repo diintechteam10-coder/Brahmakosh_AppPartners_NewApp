@@ -207,7 +207,7 @@ class RegistrationRepository extends ApiService {
       };
 
       final Response response = await apiClient.dio.post(
-        "/api/mobile/user/register/step1",
+        "/api/mobile/partner/register/step1",
         data: payload,
       );
 
@@ -223,11 +223,18 @@ class RegistrationRepository extends ApiService {
       final payload = {"email": email, "otp": otp, "clientId": "CLI-KBHUMT"};
 
       final Response response = await apiClient.dio.post(
-        "/api/mobile/user/register/step1/verify",
+        "/api/mobile/partner/register/step1/verify",
         data: payload,
       );
       final data = response.data['data'];
       await CurrentUser().save(data);
+
+      // If an existing user verifies OTP, the backend returns their token.
+      final String token =
+          response.data['data']['token'] ?? response.data['token'] ?? "";
+      if (token.isNotEmpty) {
+        await Tokens.save(token);
+      }
       return;
     } on DioException catch (e) {
       throw e.error as Exception;
@@ -294,7 +301,7 @@ class RegistrationRepository extends ApiService {
       };
 
       await apiClient.dio.post(
-        "/api/mobile/user/register/resend-mobile-otp",
+        "/api/mobile/partner/register/resend-mobile-otp",
         data: payload,
       );
     } on DioException catch (e) {
@@ -427,20 +434,47 @@ class RegistrationRepository extends ApiService {
 
   checkEmailAndGetToken({required email}) async {
     try {
-      // ======================= FIXED: removed hardcoded email =======================
       final payload = {"email": email, "clientId": "CLI-KBHUMT"};
 
+      print("📡 [Debugger] POST /check-email Payload: $payload");
+
       final Response response = await apiClient.dio.post(
-        "/api/mobile/user/check-email",
+        "/api/mobile/partner/check-email",
         data: payload,
       );
-      final token = response.data['data']['token'];
-      final user = response.data['data']['user'];
+
+      print(
+        "📡 [Debugger] check-email Response Status: ${response.statusCode}",
+      );
+      print("📡 [Debugger] check-email Response Body: ${response.data}");
+
+      final bool success = response.data['success'] ?? false;
+      final data = response.data['data'];
+
+      if (!success || data == null) {
+        print("🚨 [Debugger] User NOT found or success is false.");
+        throw Exception("User not found");
+      }
+
+      final token = data['token'];
+      final user = data['user'] ?? data['partner'] ?? data;
+
+      if (token == null) {
+        print("🚨 [Debugger] Token is missing from response data.");
+        throw Exception("Token missing");
+      }
 
       await CurrentUser().save(user);
       await Tokens.save(token);
+
+      print("✅ [Debugger] check-email successful. User/Token saved.");
     } on DioException catch (e) {
-      throw e.error as Exception;
+      print("❌ [Debugger] DioError during check-email: ${e.message}");
+      print("❌ [Debugger] Response data: ${e.response?.data}");
+      rethrow;
+    } catch (e) {
+      print("❌ [Debugger] Unexpected error in checkEmailAndGetToken: $e");
+      rethrow;
     }
   }
 }

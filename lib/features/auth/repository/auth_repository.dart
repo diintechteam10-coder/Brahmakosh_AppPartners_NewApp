@@ -42,10 +42,10 @@ class AuthRepository extends ApiService {
         "partner": partner,
         "role": "partner",
         "registrationStep": partner["registrationStep"],
+        "isActive": partner["isActive"],
       });
 
       await Tokens.save(token);
-
     } on DioException catch (e) {
       final msg = e.response?.data?["message"]?.toString();
       throw Exception(msg ?? "Login failed");

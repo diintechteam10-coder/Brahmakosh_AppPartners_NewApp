@@ -109,7 +109,7 @@ class UploadImageScreen extends StatelessWidget {
                 onPressed: () {
                   controller.uploadImage().then((value) {
                     if (value == true) {
-                      Get.offAllNamed(AppPages.bottomNav);
+                      Get.offAllNamed(AppPages.waitingapproval);
                     }
                   });
                 },
@@ -144,7 +144,7 @@ class UploadImageScreen extends StatelessWidget {
                       onPressed: () {
                         controller.skipImageUpload().then((value) {
                           if (value == true) {
-                            Get.offAllNamed(AppPages.bottomNav);
+                            Get.offAllNamed(AppPages.waitingapproval);
                           }
                         });
                       },

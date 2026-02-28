@@ -4,7 +4,9 @@ import 'package:brahmakoshpartners/core/services/current_user.dart';
 import 'package:brahmakoshpartners/core/services/socket/socket_service.dart';
 import 'package:brahmakoshpartners/core/services/tokens.dart';
 import 'package:brahmakoshpartners/features/auth/repository/auth_repository.dart';
+import 'package:brahmakoshpartners/features/profile/repository/profile_repository.dart';
 import 'package:brahmakoshpartners/features/registration/controller/registration_controller.dart';
+import 'package:brahmakoshpartners/features/registration/repository/registration_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
@@ -59,8 +61,7 @@ class AuthController extends GetxController {
         return false;
       }
 
-      // Connect socket after getting token
-      Get.find<SocketService>().connect(token.trim());
+      await routeUserBasedOnStatus();
 
       return true;
     } on NoInternetException catch (e) {
@@ -81,24 +82,87 @@ class AuthController extends GetxController {
     final token = await Tokens.token;
 
     if (token != null && token.trim().isNotEmpty) {
-      Get.find<SocketService>().connect(token.trim());
-      Get.offAllNamed(AppPages.bottomNav);
+      await routeUserBasedOnStatus();
       return;
     }
 
     final step = CurrentUser().getStep();
+    print("👉 [Debugger] handleAppOpen - Current Step: $step");
 
     if (step == 1) {
-      Get.toNamed(AppPages.sendOtpNumber);
+      Get.offAllNamed(AppPages.sendOtpNumber);
       return;
-    }
-
-    if (step == 2) {
-      Get.toNamed(AppPages.completeYourProfile);
+    } else if (step == 2) {
+      Get.offAllNamed(AppPages.completeYourProfile);
+      return;
+    } else if (step == 3) {
+      Get.offAllNamed(AppPages.uploadProfileImage);
       return;
     }
 
     Get.offAllNamed(AppPages.loginScreen);
+  }
+
+  Future<void> routeUserBasedOnStatus() async {
+    final token = await Tokens.token;
+    var userDetails = CurrentUser().userDetails;
+    var partnerData =
+        userDetails['partner'] ?? userDetails['user'] ?? userDetails;
+
+    var isActive = partnerData['isActive'] ?? false;
+    final registrationStep = partnerData['registrationStep'] ?? 4;
+
+    print(
+      "👉 [Debugger] Initial Routing State - Step: $registrationStep, Active: $isActive",
+    );
+
+    // ✅ NEW: If we have a token and user is NOT active, try to fetch latest status from API
+    if (token != null &&
+        token.trim().isNotEmpty &&
+        registrationStep >= 4 &&
+        !isActive) {
+      try {
+        print("📡 [Debugger] Auto-refreshing profile status from API...");
+        final profileRepo = PartnerProfileRepository();
+        final profileRes = await profileRepo.getProfile();
+
+        final newPartner = profileRes.data.partner;
+        isActive = newPartner.isActive;
+
+        // Update local cache with latest status
+        userDetails['isActive'] = isActive;
+        if (userDetails['partner'] != null) {
+          userDetails['partner']['isActive'] = isActive;
+        }
+        if (userDetails['user'] != null) {
+          userDetails['user']['isActive'] = isActive;
+        }
+        await CurrentUser().save(userDetails);
+
+        print("✅ [Debugger] Status refreshed. New isActive: $isActive");
+      } catch (e) {
+        print("❌ [Debugger] Failed to refresh profile status: $e");
+      }
+    }
+
+    // Connect socket if we have a token
+    if (token != null && token.trim().isNotEmpty) {
+      Get.find<SocketService>().connect(token.trim());
+    }
+
+    if (registrationStep < 4) {
+      if (registrationStep == 1) {
+        Get.offAllNamed(AppPages.sendOtpNumber);
+      } else if (registrationStep == 2) {
+        Get.offAllNamed(AppPages.completeYourProfile);
+      } else if (registrationStep == 3) {
+        Get.offAllNamed(AppPages.uploadProfileImage);
+      }
+    } else if (!isActive) {
+      Get.offAllNamed(AppPages.waitingapproval);
+    } else {
+      Get.offAllNamed(AppPages.bottomNav);
+    }
   }
 
   bool signOut() {
@@ -166,8 +230,56 @@ class AuthController extends GetxController {
         print("✅ [Debugger] Updated RegistrationController state");
       }
 
-      print("🎉 [Debugger] navigating to Send OTP Screen...");
-      Get.toNamed(AppPages.sendOtpNumber);
+      print("👉 [Debugger] Checking if Google User exists in backend...");
+      try {
+        final regRepo = RegistrationRepository();
+        await regRepo.checkEmailAndGetToken(email: googleUser.email);
+
+        print("✅ [Debugger] User exists. Logging them in.");
+
+        final userDetails = CurrentUser().userDetails;
+        final partnerData =
+            userDetails['partner'] ?? userDetails['user'] ?? userDetails;
+
+        final isActive = partnerData['isActive'] ?? false;
+        final registrationStep = partnerData['registrationStep'] ?? 4;
+
+        final token = await Tokens.token;
+        if (token != null && token.trim().isNotEmpty) {
+          Get.find<SocketService>().connect(token.trim());
+        }
+
+        if (registrationStep < 4) {
+          print(
+            "👉 [Debugger] User registration incomplete (Step $registrationStep). Routing appropriately.",
+          );
+          if (registrationStep == 1) {
+            Get.offAllNamed(AppPages.sendOtpNumber);
+          } else if (registrationStep == 2) {
+            Get.offAllNamed(AppPages.completeYourProfile);
+          } else if (registrationStep == 3) {
+            Get.offAllNamed(AppPages.uploadProfileImage);
+          }
+        } else if (!isActive) {
+          Get.offAllNamed(AppPages.waitingapproval);
+        } else {
+          Get.offAllNamed(AppPages.bottomNav);
+        }
+      } catch (e) {
+        // If it throws an exception (e.g. 404 not found), the user does not exist.
+        print(
+          "🎉 [Debugger] User routing check failed or user not found. Error: $e",
+        );
+
+        if (e.toString().contains("User not found")) {
+          print(
+            "🚨 [Debugger] User definitely not found. Navigating to Step 2 (Mobile Number).",
+          );
+          Get.toNamed(AppPages.sendOtpNumber);
+        } else {
+          Get.snackbar("Error", "Could not verify user status: $e");
+        }
+      }
 
       print("--------------------------------------------------");
     } catch (e, stackTrace) {
