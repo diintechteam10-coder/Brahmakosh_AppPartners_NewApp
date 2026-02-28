@@ -12,8 +12,8 @@ import '../bloc/call_bloc.dart';
 import '../models/call_history_response.dart';
 import '../repository/call_repository.dart';
 
-class CallScreen extends StatelessWidget {
-  const CallScreen({super.key});
+class CallLogsScreen extends StatelessWidget {
+  const CallLogsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -90,26 +90,49 @@ class _CallView extends StatelessWidget {
                         }
 
                         if (state is CallLoaded) {
-                          if (state.calls.isEmpty) {
-                            return Center(
-                              child: Text(
-                                'No calls found.',
-                                style: TextStyle(
-                                  fontFamily: Fonts.medium,
-                                  fontSize: 16.sp,
-                                  color: Colours.grey75879A,
-                                ),
-                              ),
-                            );
-                          }
-
-                          return ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: state.calls.length,
-                            itemBuilder: (context, index) {
-                              final item = state.calls[index];
-                              return _CallHistoryTile(item: item);
+                          return RefreshIndicator(
+                            color: Colours.orangeF4BD2F,
+                            onRefresh: () async {
+                              context.read<CallBloc>().add(
+                                const FetchCallHistoryEvent(),
+                              );
+                              await Future.delayed(const Duration(seconds: 1));
                             },
+                            child: state.calls.isEmpty
+                                ? ListView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(
+                                          parent: BouncingScrollPhysics(),
+                                        ),
+                                    children: [
+                                      SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                            0.6,
+                                        child: Center(
+                                          child: Text(
+                                            'No calls found.',
+                                            style: TextStyle(
+                                              fontFamily: Fonts.medium,
+                                              fontSize: 16.sp,
+                                              color: Colours.grey75879A,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : ListView.builder(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(
+                                          parent: BouncingScrollPhysics(),
+                                        ),
+                                    itemCount: state.calls.length,
+                                    itemBuilder: (context, index) {
+                                      final item = state.calls[index];
+                                      return _CallHistoryTile(item: item);
+                                    },
+                                  ),
                           );
                         }
 

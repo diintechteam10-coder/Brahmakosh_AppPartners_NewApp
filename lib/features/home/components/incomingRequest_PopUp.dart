@@ -655,7 +655,7 @@ class _IncomingRequestDialogState extends State<IncomingRequestDialog> {
 
     final topic = _safeStr(addInfo["concerns"], fallback: "Consultation");
 
-    final rate = _safeStr(widget.data["ratePerMinute"], fallback: "₹50/min");
+    final rate = _safeStr(widget.data["ratePerMinute"]);
 
     final disableAll = _busy || widget.isAccepting || widget.isRejecting;
 

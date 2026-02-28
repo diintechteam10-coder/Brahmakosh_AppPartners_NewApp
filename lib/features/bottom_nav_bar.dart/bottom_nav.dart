@@ -1,8 +1,10 @@
 import 'dart:ui';
+import 'package:flutter/services.dart';
 
 import 'package:brahmakoshpartners/core/const/assets.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
-import 'package:brahmakoshpartners/features/call/pages/call_screen.dart';
+import 'package:brahmakoshpartners/core/const/fonts.dart';
+import 'package:brahmakoshpartners/features/call/pages/call_logs_screen.dart';
 import 'package:brahmakoshpartners/features/conversations/views/conversation_list_screen.dart';
 import 'package:brahmakoshpartners/features/earning/pages/earning_screen.dart';
 import 'package:brahmakoshpartners/features/home/pages/home_screen.dart';
@@ -37,7 +39,7 @@ class _HomeState extends State<Home> {
       ),
 
       const ConversationScreen(),
-      const CallScreen(),
+      const CallLogsScreen(),
       const EarningScreen(),
       const ProfileScreen(),
     ];
@@ -45,32 +47,100 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
+    return PopScope(
+      canPop: false,
+    onPopInvokedWithResult: (didPop, result) async {
+  if (didPop) return;
 
-      bottomNavigationBar: Stack(
-        children: [
-          BottomNav(
-            currentIndex: _currentIndex,
-            onTap: _isDialogOpen
-                ? (_) {} // block taps
-                : (index) {
-                    setState(() => _currentIndex = index);
-                  },
+  // Step 1: If not on Home tab → go to Home
+  if (_currentIndex != 0) {
+    setState(() {
+      _currentIndex = 0;
+    });
+    return;
+  }
+
+  // Step 2: Already on Home → Show Exit Dialog
+  final shouldExit = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: Colours.appBackground,
+      title: Text(
+        'Exit App',
+        style: TextStyle(
+          fontFamily: Fonts.bold,
+          color: Colours.white,
+          fontSize: 18.sp,
+        ),
+      ),
+      content: Text(
+        'Are you sure you want to exit?',
+        style: TextStyle(
+          fontFamily: Fonts.regular,
+          color: Colours.grey75879A,
+          fontSize: 14.sp,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(
+            'Cancel',
+            style: TextStyle(
+              fontFamily: Fonts.medium,
+              color: Colours.grey75879A,
+              fontSize: 14.sp,
+            ),
           ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(
+            'Exit',
+            style: TextStyle(
+              fontFamily: Fonts.medium,
+              color: Colours.orangeDE8E0C,
+              fontSize: 14.sp,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
-          if (_isDialogOpen)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                    child: Container(color: Colors.black.withOpacity(0.25)),
+  // Step 3: Close App Properly
+  if (shouldExit == true) {
+    SystemNavigator.pop();
+  }
+},
+   
+      child: Scaffold(
+        body: IndexedStack(index: _currentIndex, children: _screens),
+
+        bottomNavigationBar: Stack(
+          children: [
+            BottomNav(
+              currentIndex: _currentIndex,
+              onTap: _isDialogOpen
+                  ? (_) {} // block taps
+                  : (index) {
+                      setState(() => _currentIndex = index);
+                    },
+            ),
+
+            if (_isDialogOpen)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(color: Colors.black.withOpacity(0.25)),
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
