@@ -5,10 +5,12 @@ import 'package:brahmakoshpartners/core/routes/app_pages.dart';
 import 'package:brahmakoshpartners/features/auth/components/custom_text_field-auth.dart';
 import 'package:brahmakoshpartners/features/auth/components/primary_button.dart';
 import 'package:brahmakoshpartners/features/auth/controller/auth_controller.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -161,13 +163,38 @@ class LoginScreen extends StatelessWidget {
 
                   40.h.verticalSpace,
 
-                  Text(
-                    'By continuing, you agree to our Terms & Privacy Policy',
+                  RichText(
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: Fonts.light,
-                      fontSize: 12.sp,
-                      color: Colours.grey667993,
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontFamily: Fonts.light,
+                        fontSize: 12.sp,
+                        color: Colours.grey667993,
+                      ),
+                      children: [
+                        const TextSpan(
+                          text: 'By continuing, you agree to our ',
+                        ),
+                        TextSpan(
+                          text: 'Terms & Privacy Policy',
+                          style: const TextStyle(
+                            color: Colours.orangeFF9F07,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () async {
+                              final Uri url = Uri.parse(
+                                'https://www.brahmakosh.com/privacy-policy',
+                              );
+                              if (!await launchUrl(
+                                url,
+                                mode: LaunchMode.externalApplication,
+                              )) {
+                                Get.snackbar('Error', 'Could not launch URL');
+                              }
+                            },
+                        ),
+                      ],
                     ),
                   ),
 
@@ -235,7 +262,7 @@ class _AppLogo extends StatelessWidget {
         ),
       ),
       alignment: Alignment.center,
-      child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
+      child: Image.asset("assets/images/logo-removebg.png", fit: BoxFit.cover),
     );
   }
 }

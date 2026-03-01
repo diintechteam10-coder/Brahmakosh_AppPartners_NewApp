@@ -34,6 +34,7 @@ class _EarningView extends StatefulWidget {
 
 class _EarningViewState extends State<_EarningView> {
   final ScrollController _scrollController = ScrollController();
+  bool _showAllTransactions = false;
 
   @override
   void initState() {
@@ -78,7 +79,12 @@ class _EarningViewState extends State<_EarningView> {
           return Center(
             child: SizedBox(
               width: contentWidth,
-              child: BlocBuilder<EarningBloc, EarningState>(
+              child: BlocConsumer<EarningBloc, EarningState>(
+                listener: (context, state) {
+                  if (!state.isLoading && !state.isLoadingMore) {
+                    _showAllTransactions = false;
+                  }
+                },
                 builder: (context, state) {
                   return SingleChildScrollView(
                     controller: _scrollController,
@@ -317,18 +323,48 @@ class _EarningViewState extends State<_EarningView> {
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: state.earnings.length,
-      itemBuilder: (context, index) {
-        final earning = state.earnings[index];
-        return Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: _TransactionTile(earning: earning),
-        );
-      },
+    final int maxVisible = 6;
+    final bool hasMoreThanMax = state.earnings.length > maxVisible;
+    final int displayCount = _showAllTransactions
+        ? state.earnings.length
+        : (hasMoreThanMax ? maxVisible : state.earnings.length);
+
+    return Column(
+      children: [
+        ListView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: displayCount,
+          itemBuilder: (context, index) {
+            final earning = state.earnings[index];
+            return Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: _TransactionTile(earning: earning),
+            );
+          },
+        ),
+        if (hasMoreThanMax && !_showAllTransactions)
+          _SeeMoreLessButton(
+            label: 'See More',
+            icon: Icons.keyboard_arrow_down_rounded,
+            onTap: () {
+              setState(() {
+                _showAllTransactions = true;
+              });
+            },
+          ),
+        if (hasMoreThanMax && _showAllTransactions)
+          _SeeMoreLessButton(
+            label: 'See Less',
+            icon: Icons.keyboard_arrow_up_rounded,
+            onTap: () {
+              setState(() {
+                _showAllTransactions = false;
+              });
+            },
+          ),
+      ],
     );
   }
 }
@@ -747,6 +783,53 @@ class _TransactionTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SeeMoreLessButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _SeeMoreLessButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        margin: EdgeInsets.only(top: 4.h, bottom: 8.h),
+        decoration: BoxDecoration(
+          color: Colours.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: Colours.orangeFF9F07.withOpacity(0.3),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontFamily: Fonts.bold,
+                color: Colours.orangeFF9F07,
+              ),
+            ),
+            6.horizontalSpace,
+            Icon(icon, color: Colours.orangeFF9F07, size: 20.sp),
+          ],
+        ),
       ),
     );
   }
