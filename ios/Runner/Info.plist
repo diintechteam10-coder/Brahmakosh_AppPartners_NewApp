@@ -4,8 +4,6 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -41,6 +39,8 @@
 	<string>449350149768-52s0420o367lvjn7uvclfgj3ke5344q2.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -58,5 +58,22 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+<string>This app requires camera access for video consultation and capturing profile photos.</string>
+
+<key>NSMicrophoneUsageDescription</key>
+<string>This app requires microphone access for voice communication.</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app requires access to your photo library to upload profile images.</string>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>This app saves images to your photo library when required.</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app may access your location to improve service availability and user experience.</string>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app may access your location to provide better services when required.</string>
 </dict>
 </plist>
