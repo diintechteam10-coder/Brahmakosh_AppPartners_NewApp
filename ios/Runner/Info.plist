@@ -4,6 +4,8 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -38,12 +40,6 @@
 	<key>GIDClientID</key>
 	<string>449350149768-52s0420o367lvjn7uvclfgj3ke5344q2.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access for video calls.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access for voice calls.</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

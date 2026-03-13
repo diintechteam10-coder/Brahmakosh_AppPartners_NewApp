@@ -3,9 +3,11 @@ import 'package:brahmakoshpartners/core/const/colours.dart';
 import 'package:brahmakoshpartners/core/const/fonts.dart';
 import 'package:brahmakoshpartners/core/routes/app_pages.dart';
 import 'package:brahmakoshpartners/features/registration/controller/registration_controller.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/components/custome_textfield.dart';
 
@@ -85,7 +87,10 @@ class _SendOtpEmailScreenState extends State<SendOtpEmailScreen> {
                           ],
                         ),
                         alignment: Alignment.center,
-                          child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
+                        child: Image.asset(
+                          "assets/images/logo-removebg.png",
+                          fit: BoxFit.cover,
+                        ),
                       ),
 
                       32.h.verticalSpace,
@@ -226,13 +231,41 @@ class _SendOtpEmailScreenState extends State<SendOtpEmailScreen> {
 
                       24.h.verticalSpace,
 
-                      Text(
-                        'By continuing, you agree to our Terms & Privacy Policy',
+                      RichText(
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: Fonts.light,
-                          fontSize: 12.sp,
-                          color: Colours.grey667993,
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontFamily: Fonts.light,
+                            fontSize: 12.sp,
+                            color: Colours.grey667993,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: 'By continuing, you agree to our ',
+                            ),
+                            TextSpan(
+                              text: 'Terms & Privacy Policy',
+                              style: const TextStyle(
+                                color: Colours.orangeFF9F07,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  final Uri url = Uri.parse(
+                                    'https://www.brahmakosh.com/privacy-policy',
+                                  );
+                                  if (!await launchUrl(
+                                    url,
+                                    mode: LaunchMode.externalApplication,
+                                  )) {
+                                    Get.snackbar(
+                                      'Error',
+                                      'Could not launch URL',
+                                    );
+                                  }
+                                },
+                            ),
+                          ],
                         ),
                       ),
 

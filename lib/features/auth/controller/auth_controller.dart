@@ -152,7 +152,7 @@ class AuthController extends GetxController {
       Get.find<SocketService>().connect(token.trim());
     }
 
-    if (registrationStep < 4) {
+    if (registrationStep >= 1 && registrationStep < 4) {
       if (registrationStep == 1) {
         Get.offAllNamed(AppPages.sendOtpNumber);
       } else if (registrationStep == 2) {

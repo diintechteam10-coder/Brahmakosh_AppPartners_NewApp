@@ -63,6 +63,7 @@ dependencies:
   # just_audio: ^0.10.5
   audioplayers: ^6.5.1
   cached_network_image: ^3.4.1
+  url_launcher: ^6.3.2
   sign_in_with_apple: ^7.0.1
 
 
@@ -85,6 +86,7 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/images/logo.png"
+  remove_alpha_ios: true
 
 # The following section is specific to Flutter packages.
 flutter:
