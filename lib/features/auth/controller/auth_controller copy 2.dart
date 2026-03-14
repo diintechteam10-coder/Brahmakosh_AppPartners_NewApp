@@ -55,7 +55,7 @@
 //       final token = await Tokens.token;
 
 //       if (token == null || token.trim().isEmpty) {
-//         Get.snackbar("Error", "Token not found after login");
+//         Get.snackbar("Error", "Token not found after login", backgroundColor: Colors.white, colorText: Colors.black);
 //         return false;
 //       }
 
@@ -64,13 +64,13 @@
 
 //       return true;
 //     } on NoInternetException catch (e) {
-//       Get.snackbar("No Connection", e.toString());
+//       Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error", e.message);
+//       Get.snackbar("Error", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } catch (e) {
-//       Get.snackbar("Error", e.toString());
+//       Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -175,7 +175,7 @@
 //       print(e);
 //       print(stackTrace);
 //       print("--------------------------------------------------");
-//       Get.snackbar("Google Login Error", e.toString());
+//       Get.snackbar("Google Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //     }
 //   }
 
@@ -227,7 +227,7 @@
 //   //     print(e);
 //   //     print(stackTrace);
 //   //     print("--------------------------------------------------");
-//   //     Get.snackbar("Apple Login Error", e.toString());
+//   //     Get.snackbar("Apple Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //   //   }
 //   // }
 
@@ -295,7 +295,7 @@
 // //         'Invalid Details',
 // //         'Please correct the highlighted fields',
 // //         snackPosition: SnackPosition.TOP,
-// //       );
+// //       , backgroundColor: Colors.white, colorText: Colors.black);
 // //       return;
 // //     }
 
@@ -340,7 +340,7 @@
 // //     final token = await Tokens.token;
 
 // //     if (token == null || token.trim().isEmpty) {
-// //       Get.snackbar("Error", "Login success but token not saved");
+// //       Get.snackbar("Error", "Login success but token not saved", backgroundColor: Colors.white, colorText: Colors.black);
 // //       return false;
 // //     }
 
@@ -349,13 +349,13 @@
 
 // //     return true;
 // //   } on NoInternetException catch (_) {
-// //     Get.snackbar("No Internet", "Internet connection not available");
+// //     Get.snackbar("No Internet", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 // //     return false;
 // //   } on ApiException catch (e) {
-// //     Get.snackbar("Error", e.message);
+// //     Get.snackbar("Error", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 // //     return false;
 // //   } catch (e) {
-// //     Get.snackbar("Error", e.toString());
+// //     Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 // //     return false;
 // //   } finally {
 // //     isLoading.value = false;
@@ -379,7 +379,7 @@
 // // //     final token = await Tokens.token;
 
 // // //     if (token == null || token.trim().isEmpty) {
-// // //       Get.snackbar("Error", "Token not found after login");
+// // //       Get.snackbar("Error", "Token not found after login", backgroundColor: Colors.white, colorText: Colors.black);
 // // //       return false;
 // // //     }
 
@@ -388,13 +388,13 @@
 
 // // //     return true;
 // // //   } on NoInternetException catch (_) {
-// // //     Get.snackbar("No Internet", "Internet connection not available");
+// // //     Get.snackbar("No Internet", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 // // //     return false;
 // // //   } on ApiException catch (e) {
-// // //     Get.snackbar("Error", e.message);
+// // //     Get.snackbar("Error", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 // // //     return false;
 // // //   } catch (e) {
-// // //     Get.snackbar("Error", e.toString());
+// // //     Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 // // //     return false;
 // // //   } finally {
 // // //     isLoading.value = false;
@@ -488,7 +488,7 @@
 // //       print(e);
 // //       print(stackTrace);
 // //       print("--------------------------------------------------");
-// //       Get.snackbar("Google Login Error", e.toString());
+// //       Get.snackbar("Google Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 // //     }
 // //   }
 // // }

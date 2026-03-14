@@ -143,7 +143,7 @@ class UploadImageScreen extends StatelessWidget {
                   : TextButton(
                       onPressed: () {
                         controller.skipImageUpload().then((value) {
-                          if (value == true) {
+                          if (value == false) {
                             Get.offAllNamed(AppPages.waitingapproval);
                           }
                         });

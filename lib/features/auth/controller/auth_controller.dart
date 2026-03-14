@@ -59,7 +59,7 @@ class AuthController extends GetxController {
       final token = await Tokens.token;
 
       if (token == null || token.trim().isEmpty) {
-        Get.snackbar("Error", "Token not found after login");
+        Get.snackbar("Error", "Token not found after login", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -67,13 +67,13 @@ class AuthController extends GetxController {
 
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error", e.message);
+      Get.snackbar("Error", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -279,7 +279,7 @@ class AuthController extends GetxController {
           );
           Get.toNamed(AppPages.sendOtpNumber);
         } else {
-          Get.snackbar("Error", "Could not verify user status: $e");
+          Get.snackbar("Error", "Could not verify user status: $e", backgroundColor: Colors.white, colorText: Colors.black);
         }
       }
 
@@ -289,7 +289,7 @@ class AuthController extends GetxController {
       print(e);
       print(stackTrace);
       print("--------------------------------------------------");
-      Get.snackbar("Google Login Error", e.toString());
+      Get.snackbar("Google Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
     }
   }
 Future<void> signInWithApple() async {
@@ -386,7 +386,7 @@ Future<void> signInWithApple() async {
     print(stackTrace);
     print("--------------------------------------------------");
 
-    Get.snackbar("Apple Login Error", e.toString());
+    Get.snackbar("Apple Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
   }
 }
 
@@ -508,7 +508,7 @@ Future<void> signInWithApple() async {
 //       Get.snackbar(
 //         "Apple Login",
 //         "Email not available. Please login again or use another method.",
-//       );
+//       , backgroundColor: Colors.white, colorText: Colors.black);
 //     }
 //   } catch (e, s) {
 //     print("❌ APPLE LOGIN ERROR TYPE: ${e.runtimeType}");
@@ -520,7 +520,7 @@ Future<void> signInWithApple() async {
 //       print("🔥 Firebase Error Message: ${e.message}");
 //     }
 
-//     Get.snackbar("Apple Login Failed", e.toString());
+//     Get.snackbar("Apple Login Failed", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //   } finally {
 //     print('🔚 Apple Sign-In END');
 //     isAppleLoading.value = false;

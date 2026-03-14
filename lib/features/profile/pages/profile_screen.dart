@@ -184,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Get.snackbar(
                               'Error',
                               'Could not open privacy policy',
-                            );
+                            backgroundColor: Colors.white, colorText: Colors.black);
                           }
                         },
                       ),

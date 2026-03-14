@@ -109,7 +109,7 @@
 
 //       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
 //       if (!serviceEnabled) {
-//         Get.snackbar("Location Disabled", "Please enable GPS");
+//         Get.snackbar("Location Disabled", "Please enable GPS", backgroundColor: Colors.white, colorText: Colors.black);
 //         return;
 //       }
 
@@ -122,7 +122,7 @@
 //         Get.snackbar(
 //           "Permission Denied",
 //           "Please allow location permission from settings",
-//         );
+//         , backgroundColor: Colors.white, colorText: Colors.black);
 //         return;
 //       }
 
@@ -148,7 +148,7 @@
 //         countryController.text = placemarks.first.country ?? "";
 //       }
 //     } catch (e) {
-//       Get.snackbar("Error", "Unable to fetch current location");
+//       Get.snackbar("Error", "Unable to fetch current location", backgroundColor: Colors.white, colorText: Colors.black);
 //     } finally {
 //       isLocationLoading.value = false;
 //     }
@@ -199,7 +199,7 @@
 //         'Image Required',
 //         'Please select a clear face image',
 //         snackPosition: SnackPosition.TOP,
-//       );
+//       , backgroundColor: Colors.white, colorText: Colors.black);
 //       return;
 //     }
 
@@ -212,7 +212,7 @@
 //         'Missing Image',
 //         'Uploading an image is mandatory',
 //         snackPosition: SnackPosition.TOP,
-//       );
+//       , backgroundColor: Colors.white, colorText: Colors.black);
 //       return;
 //     }
 
@@ -220,7 +220,7 @@
 //       'Image Uploaded',
 //       'Your image has been uploaded successfully',
 //       snackPosition: SnackPosition.TOP,
-//     );
+//     , backgroundColor: Colors.white, colorText: Colors.black);
 //     Get.toNamed(AppPages.waitingapproval);
 //   }
 
@@ -262,7 +262,7 @@
 //       'OTP Resent',
 //       'A new verification code has been sent',
 //       snackPosition: SnackPosition.TOP,
-//     );
+//     , backgroundColor: Colors.white, colorText: Colors.black);
 //   }
 
 //   @override
@@ -281,10 +281,10 @@
 //       await repository.sendOtpToEmail(email: email, password: password);
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -300,10 +300,10 @@
 //       await repository.verifyOtpEmail(otp: otp, email: email!);
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -321,10 +321,10 @@
 //       );
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -337,7 +337,7 @@
 //         'Invalid OTP',
 //         'Please enter the 6-digit verification code',
 //         snackPosition: SnackPosition.TOP,
-//       );
+//       , backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     }
 
@@ -354,7 +354,7 @@
 //           'Error',
 //           'User session lost. Please try registering again.',
 //           snackPosition: SnackPosition.TOP,
-//         );
+//         , backgroundColor: Colors.white, colorText: Colors.black);
 //         return false;
 //       }
 //     }
@@ -382,10 +382,10 @@
 //       );
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -401,10 +401,10 @@
 //       );
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -423,7 +423,7 @@
 //       }
 
 //       if (email == null) {
-//         Get.snackbar("Error !", "Email not found, please register again.");
+//         Get.snackbar("Error !", "Email not found, please register again.", backgroundColor: Colors.white, colorText: Colors.black);
 //         return false;
 //       }
 
@@ -432,7 +432,7 @@
 //           : (mobileNumber ?? "").trim();
 
 //       if (phone.isEmpty) {
-//         Get.snackbar("Error !", "Phone number is required.");
+//         Get.snackbar("Error !", "Phone number is required.", backgroundColor: Colors.white, colorText: Colors.black);
 //         return false;
 //       }
 
@@ -442,7 +442,7 @@
 //       }
 
 //       if (latitude.value == 0.0 && longitude.value == 0.0) {
-//         Get.snackbar("Error !", "Unable to get current location.");
+//         Get.snackbar("Error !", "Unable to get current location.", backgroundColor: Colors.white, colorText: Colors.black);
 //         return false;
 //       }
 
@@ -465,13 +465,13 @@
 
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } catch (e) {
-//       Get.snackbar("Error !", e.toString());
+//       Get.snackbar("Error !", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -484,10 +484,10 @@
 //       await repository.uploadImage(path: selectedImage.value!.path);
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -599,7 +599,7 @@ class RegistrationController extends GetxController {
 
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        Get.snackbar("Location Disabled", "Please enable GPS");
+        Get.snackbar("Location Disabled", "Please enable GPS", backgroundColor: Colors.white, colorText: Colors.black);
         return;
       }
 
@@ -612,7 +612,7 @@ class RegistrationController extends GetxController {
         Get.snackbar(
           "Permission Denied",
           "Please allow location permission from settings",
-        );
+        backgroundColor: Colors.white, colorText: Colors.black);
         return;
       }
 
@@ -636,7 +636,7 @@ class RegistrationController extends GetxController {
         countryController.text = placemarks.first.country ?? "";
       }
     } catch (e) {
-      Get.snackbar("Error", "Unable to fetch current location");
+      Get.snackbar("Error", "Unable to fetch current location", backgroundColor: Colors.white, colorText: Colors.black);
     } finally {
       isLocationLoading.value = false;
     }
@@ -682,7 +682,7 @@ class RegistrationController extends GetxController {
         'Image Required',
         'Please select a clear face image',
         snackPosition: SnackPosition.TOP,
-      );
+      backgroundColor: Colors.white, colorText: Colors.black);
       return;
     }
 
@@ -695,7 +695,7 @@ class RegistrationController extends GetxController {
         'Missing Image',
         'Uploading an image is mandatory',
         snackPosition: SnackPosition.TOP,
-      );
+      backgroundColor: Colors.white, colorText: Colors.black);
       return;
     }
 
@@ -703,7 +703,7 @@ class RegistrationController extends GetxController {
       'Image Uploaded',
       'Your image has been uploaded successfully',
       snackPosition: SnackPosition.TOP,
-    );
+    backgroundColor: Colors.white, colorText: Colors.black);
 
     Get.defaultDialog(
       title: "Profile Under Review",
@@ -771,10 +771,10 @@ class RegistrationController extends GetxController {
       await repository.sendOtpToEmail(email: email, password: password);
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -787,10 +787,10 @@ class RegistrationController extends GetxController {
       await repository.verifyOtpEmail(otp: otp, email: email!);
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -808,10 +808,10 @@ class RegistrationController extends GetxController {
       );
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -824,7 +824,7 @@ class RegistrationController extends GetxController {
         'Invalid OTP',
         'Please enter the 6-digit verification code',
         snackPosition: SnackPosition.TOP,
-      );
+      backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     }
 
@@ -835,13 +835,13 @@ class RegistrationController extends GetxController {
           CurrentUser().userDetails['email'] ??
           CurrentUser().userDetails['user']?['email'];
       if (resolvedEmail == null) {
-        Get.snackbar("Error", "Email not found. Please register again.");
+        Get.snackbar("Error", "Email not found. Please register again.", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
       final resolvedPhone = mobileNumber ?? phoneController.text.trim();
       if (resolvedPhone.isEmpty) {
-        Get.snackbar("Error", "Phone not found. Please enter phone again.");
+        Get.snackbar("Error", "Phone not found. Please enter phone again.", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -854,10 +854,10 @@ class RegistrationController extends GetxController {
 
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -872,7 +872,7 @@ class RegistrationController extends GetxController {
           CurrentUser().userDetails['email'] ??
           CurrentUser().userDetails['user']?['email'];
       if (resolvedEmail == null) {
-        Get.snackbar("Error", "Email not found. Please register again.");
+        Get.snackbar("Error", "Email not found. Please register again.", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -882,10 +882,10 @@ class RegistrationController extends GetxController {
       );
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -900,7 +900,7 @@ class RegistrationController extends GetxController {
           CurrentUser().userDetails['email'] ??
           CurrentUser().userDetails['user']?['email'];
       if (email == null) {
-        Get.snackbar("Error !", "Email not found, please register again.");
+        Get.snackbar("Error !", "Email not found, please register again.", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -909,7 +909,7 @@ class RegistrationController extends GetxController {
           : (mobileNumber ?? "").trim();
 
       if (phone.isEmpty) {
-        Get.snackbar("Error !", "Phone number is required.");
+        Get.snackbar("Error !", "Phone number is required.", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -918,7 +918,7 @@ class RegistrationController extends GetxController {
       }
 
       if (latitude.value == 0.0 && longitude.value == 0.0) {
-        Get.snackbar("Error !", "Unable to get current location.");
+        Get.snackbar("Error !", "Unable to get current location.", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -940,23 +940,23 @@ class RegistrationController extends GetxController {
         latitude: latitude.value,
         longitude: longitude.value,
       );
-
-      // ✅ CONNECT SOCKET RIGHT AFTER REGISTER
       final token = await Tokens.token;
       debugPrint("🔑 After register tokenLen=${token?.length ?? 0}");
       if (token != null) {
         Get.find<SocketService>().connect(token);
       }
-
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", 
+      "Something went wrong, please try again later,we are resolving",
+      // e.message
+     backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } catch (e) {
-      Get.snackbar("Error !", e.toString());
+      Get.snackbar("Error !", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -968,7 +968,7 @@ class RegistrationController extends GetxController {
     isLoading.value = true;
     try {
       if (selectedImage.value == null) {
-        Get.snackbar("Error", "Please select an image first");
+        Get.snackbar("Error", "Please select an image first", backgroundColor: Colors.white, colorText: Colors.black);
         return false;
       }
 
@@ -982,10 +982,10 @@ class RegistrationController extends GetxController {
 
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;
@@ -1005,13 +1005,13 @@ class RegistrationController extends GetxController {
 
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } catch (e) {
-      Get.snackbar("Error !", e.toString());
+      Get.snackbar("Error !", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;

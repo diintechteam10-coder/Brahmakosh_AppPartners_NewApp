@@ -408,10 +408,10 @@
 //         conversationId: _conversationId,
 //         onEnded: () {
 //           // optional: toast/snackbar
-//           Get.snackbar("Chat", "Conversation ended");
+//           Get.snackbar("Chat", "Conversation ended", backgroundColor: Colors.white, colorText: Colors.black);
 //         },
 //         onError: (msg) {
-//           Get.snackbar("Error", msg);
+//           Get.snackbar("Error", msg, backgroundColor: Colors.white, colorText: Colors.black);
 //         },
 //       );
 //     }

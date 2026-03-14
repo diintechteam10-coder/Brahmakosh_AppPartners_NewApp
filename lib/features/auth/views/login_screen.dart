@@ -199,7 +199,7 @@ class LoginScreen extends StatelessWidget {
                                 url,
                                 mode: LaunchMode.externalApplication,
                               )) {
-                                Get.snackbar('Error', 'Could not launch URL');
+                                Get.snackbar('Error', 'Could not launch URL', backgroundColor: Colors.white, colorText: Colors.black);
                               }
                             },
                         ),

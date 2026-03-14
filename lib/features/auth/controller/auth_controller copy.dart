@@ -54,7 +54,7 @@
 // //         'Invalid Details',
 // //         'Please correct the highlighted fields',
 // //         snackPosition: SnackPosition.TOP,
-// //       );
+// //       , backgroundColor: Colors.white, colorText: Colors.black);
 // //       return;
 // //     }
 
@@ -92,7 +92,7 @@
 
 // //     final token = await Tokens.token;
 // //     if (token == null || token.trim().isEmpty) {
-// //       Get.snackbar("Error", "Token not found after login");
+// //       Get.snackbar("Error", "Token not found after login", backgroundColor: Colors.white, colorText: Colors.black);
 // //       return false;
 // //     }
 
@@ -101,13 +101,13 @@
 
 // //     return true;
 // //   } on NoInternetException catch (_) {
-// //     Get.snackbar("No Internet !", "Internet connection not available");
+// //     Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 // //     return false;
 // //   } on ApiException catch (e) {
-// //     Get.snackbar("Error !", e.message);
+// //     Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 // //     return false;
 // //   } catch (e) {
-// //     Get.snackbar("Error !", e.toString());
+// //     Get.snackbar("Error !", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 // //     return false;
 // //   } finally {
 // //     isLoading.value = false;
@@ -215,7 +215,7 @@
 // //       print(e);
 // //       print(stackTrace);
 // //       print("--------------------------------------------------");
-// //       Get.snackbar("Google Login Error", e.toString());
+// //       Get.snackbar("Google Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 // //     }
 // //   }
 
@@ -296,7 +296,7 @@
 // // //         'Invalid Details',
 // // //         'Please correct the highlighted fields',
 // // //         snackPosition: SnackPosition.TOP,
-// // //       );
+// // //       , backgroundColor: Colors.white, colorText: Colors.black);
 // // //       return;
 // // //     }
 
@@ -319,10 +319,10 @@
 // // //       await _connectSocketIfPossible();
 // // //       return true;
 // // //     } on NoInternetException catch (_) {
-// // //       Get.snackbar("No Internet !", "Internet connection not available");
+// // //       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 // // //       return false;
 // // //     } on ApiException catch (e) {
-// // //       Get.snackbar("Error !", e.message);
+// // //       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 // // //       return false;
 // // //     } finally {
 // // //       isLoading.value = false;
@@ -440,13 +440,13 @@
 // // //       debugPrint("🎉 Google login + socket connect done");
 // // //       debugPrint("--------------------------------------------------");
 // // //     } on NoInternetException catch (_) {
-// // //       Get.snackbar("No Internet !", "Internet connection not available");
+// // //       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 // // //     } on ApiException catch (e) {
-// // //       Get.snackbar("Error !", e.message);
+// // //       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 // // //     } catch (e, st) {
 // // //       debugPrint("❌ GOOGLE SIGN-IN ERROR: $e");
 // // //       debugPrint("$st");
-// // //       Get.snackbar("Google Login Error", e.toString());
+// // //       Get.snackbar("Google Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 // // //     } finally {
 // // //       isLoading.value = false;
 // // //     }
@@ -521,7 +521,7 @@
 //       final token = await Tokens.token;
 
 //       if (token == null || token.trim().isEmpty) {
-//         Get.snackbar("Error", "Token not found after login");
+//         Get.snackbar("Error", "Token not found after login", backgroundColor: Colors.white, colorText: Colors.black);
 //         return false;
 //       }
 
@@ -529,13 +529,13 @@
 
 //       return true;
 //     } on NoInternetException catch (_) {
-//       Get.snackbar("No Internet", "Internet connection not available");
+//       Get.snackbar("No Internet", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error", e.message);
+//       Get.snackbar("Error", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } catch (e) {
-//       Get.snackbar("Error", e.toString());
+//       Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -617,7 +617,7 @@
 //       Get.toNamed(AppPages.sendOtpNumber);
 
 //     } catch (e) {
-//       Get.snackbar("Google Login Error", e.toString());
+//       Get.snackbar("Google Login Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //     }
 //   }
 

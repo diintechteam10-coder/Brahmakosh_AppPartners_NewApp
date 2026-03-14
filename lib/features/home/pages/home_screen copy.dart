@@ -128,7 +128,7 @@
 //       await _statusCtrl.updateStatus(mapped);
 
 //       if (_statusCtrl.error.value.isNotEmpty) {
-//         Get.snackbar("Error", _statusCtrl.error.value);
+//         Get.snackbar("Error", _statusCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
 //         return;
 //       }
 
@@ -140,7 +140,7 @@
 
 //         final token = await Tokens.token;
 //         if (token == null || token.trim().isEmpty) {
-//           Get.snackbar("Error", "Token missing. Please login again.");
+//           Get.snackbar("Error", "Token missing. Please login again.", backgroundColor: Colors.white, colorText: Colors.black);
 //           return;
 //         }
 
@@ -152,7 +152,7 @@
 //         _reqCtrl.clear();
 //       }
 //     } catch (e) {
-//       Get.snackbar("Error", e.toString());
+//       Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
 //     }
 //   }
 
@@ -178,14 +178,14 @@
 //                 : null;
 
 //             if (requestId == null || requestId.isEmpty) {
-//               Get.snackbar("Error", "conversationId missing");
+//               Get.snackbar("Error", "conversationId missing", backgroundColor: Colors.white, colorText: Colors.black);
 //               return;
 //             }
 
 //             await _rejectCtrl.reject(requestId: requestId, reason: reason);
 
 //             if (_rejectCtrl.error.value.isNotEmpty) {
-//               Get.snackbar("Reject Failed", _rejectCtrl.error.value);
+//               Get.snackbar("Reject Failed", _rejectCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
 //               return;
 //             }
 
@@ -203,14 +203,14 @@
 //                 : null;
 
 //             if (requestId == null || requestId.isEmpty) {
-//               Get.snackbar("Error", "conversationId missing");
+//               Get.snackbar("Error", "conversationId missing", backgroundColor: Colors.white, colorText: Colors.black);
 //               return;
 //             }
 
 //             await _acceptCtrl.accept(requestId: requestId);
 
 //             if (_acceptCtrl.error.value.isNotEmpty) {
-//               Get.snackbar("Accept Failed", _acceptCtrl.error.value);
+//               Get.snackbar("Accept Failed", _acceptCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
 //               return;
 //             }
 
