@@ -587,10 +587,6 @@ class RegistrationController extends GetxController {
     } catch (e) {
       debugPrint('Error getting email from CurrentUser: $e');
     }
-
-    // 🔥 Removed fetchCurrentLocation() from here to prevent location error 
-    // snackbars on the splash screen during app initialization.
-    // It will be fetched when needed (e.g., during form submission).
   }
 
   Future<void> fetchCurrentLocation() async {
