@@ -152,7 +152,9 @@ class AuthController extends GetxController {
       Get.find<SocketService>().connect(token.trim());
     }
 
-    if (registrationStep >= 1 && registrationStep < 4) {
+    if (isActive) {
+      Get.offAllNamed(AppPages.bottomNav);
+    } else if (registrationStep >= 1 && registrationStep < 4) {
       if (registrationStep == 1) {
         Get.offAllNamed(AppPages.sendOtpNumber);
       } else if (registrationStep == 2) {
@@ -160,10 +162,8 @@ class AuthController extends GetxController {
       } else if (registrationStep == 3) {
         Get.offAllNamed(AppPages.uploadProfileImage);
       }
-    } else if (!isActive) {
-      Get.offAllNamed(AppPages.waitingapproval);
     } else {
-      Get.offAllNamed(AppPages.bottomNav);
+      Get.offAllNamed(AppPages.waitingapproval);
     }
   }
 
