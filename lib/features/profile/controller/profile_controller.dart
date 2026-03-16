@@ -139,16 +139,12 @@ class PartnerProfileController extends GetxController {
 
   Future<void> fetchPartnerDetails() async {
     try {
-      final creditRes = await partnerRepository.getPartnerCredits();
-
-      if (creditRes is Map && creditRes['data'] != null) {
-        credits.value =
-            (creditRes['data']['credits'] as num?)?.toDouble() ?? 0.0;
-
-        totalClients.value =
-            (creditRes['data']['totalClients'] as num?)?.toInt() ?? 0;
+      // Use balance from the profile model if available
+      if (partner.value != null) {
+        credits.value = partner.value!.creditsEarnedBalance;
       }
 
+      // getPartnerStatus is still valid
       final statusRes = await partnerRepository.getPartnerStatus();
 
       if (statusRes is Map && statusRes['data'] != null) {

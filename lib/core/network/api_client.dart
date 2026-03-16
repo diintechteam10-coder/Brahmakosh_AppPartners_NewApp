@@ -31,40 +31,37 @@ class ApiClient {
             options.headers['Authorization'] = 'Bearer $token';
           }
 
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          return handler.next(response);
-        },
-        onError: (error, handler) {
-          final exception = DioErrorMapper.map(error);
-          handler.reject(
-            DioException(
-              requestOptions: error.requestOptions,
-              error: exception,
-            ),
-          );
-        },
-      ),
-
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
           logger.d("${options.method} -> ${options.path}");
           if (options.data != null) {
             logger.d(options.data);
           }
           return handler.next(options);
         },
-
         onResponse: (response, handler) {
-          // logger.d(response.data);
           return handler.next(response);
         },
-
         onError: (error, handler) {
           logger.e("API ERROR IN -> ${error.requestOptions.path}");
-          logger.e(error.response?.data);
-          return handler.next(error);
+          if (error.response?.data != null) {
+            logger.e("ERROR BODY: ${error.response?.data}");
+          } else {
+            logger.e("ERROR MESSAGE: ${error.message}");
+          }
+
+          // Map the error but preserve the original exception context if possible
+          final exception = DioErrorMapper.map(error);
+          
+          // We reject with a new exception that contains our mapped ApiException in the 'error' field,
+          // BUT we must also preserve the 'response' so repositories can inspect it.
+          return handler.reject(
+            DioException(
+              requestOptions: error.requestOptions,
+              response: error.response,
+              type: error.type,
+              error: exception,
+              message: exception.toString(),
+            ),
+          );
         },
       ),
       PrettyDioLogger(

@@ -32,11 +32,13 @@ class DioErrorMapper {
 
       case DioExceptionType.badResponse:
         final data = error.response?.data;
+        final statusCode = error.response?.statusCode;
+        final message = data is Map && data['message'] != null
+            ? data['message'].toString()
+            : 'Bad request';
 
         return ApiException(
-          message: data is Map && data['message'] != null
-              ? data['message'].toString()
-              : 'Bad request',
+          message: statusCode != null ? "($statusCode) $message" : message,
         );
 
       case DioExceptionType.connectionError:

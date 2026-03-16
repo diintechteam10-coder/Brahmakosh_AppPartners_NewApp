@@ -171,7 +171,7 @@ class SendOtpMobileNumber extends StatelessWidget {
                             'Invalid Number',
                             'Please enter a valid mobile number',
                             snackPosition: SnackPosition.TOP,
-                          );
+                          backgroundColor: Colors.white, colorText: Colors.black);
                           return;
                         }
 

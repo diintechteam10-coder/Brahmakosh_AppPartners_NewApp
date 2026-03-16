@@ -9,6 +9,7 @@ class SocketEvents {
 
   // ===== Conversation =====
   static const newConversationRequest = "notification:conversation:request";
+  static const conversationCancelled = "notification:conversation:cancelled";
   static const joinConversation = "conversation:join";
   static const leaveConversation = "conversation:leave";
   static const bulkJoinConversation = "conversation:bulk-join";

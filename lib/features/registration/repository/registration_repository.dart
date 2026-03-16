@@ -409,9 +409,16 @@ class RegistrationRepository extends ApiService {
 
   Future<void> skipImageUpload() async {
     try {
+      final formData = FormData.fromMap({
+        "image": MultipartFile.fromString(
+          "",
+          filename: "empty.jpg",
+        ),
+      });
+
       final Response response = await apiClient.dio.post(
         "/api/mobile/partner/register/step4",
-        data: {}, // No body data for skip
+        data: formData,
       );
 
       final userResponse = response.data['data'];

@@ -126,7 +126,7 @@ class _ChatScreenState extends State<ChatScreen> {
           // ✅ Prevent opening sheet again if user is manually ending it
           if (endCtrl.isEnding.value || endCtrl.isEndedByMe) return;
 
-          Get.snackbar("Chat", "Conversation ended");
+          Get.snackbar("Chat", "Conversation ended", backgroundColor: Colors.white, colorText: Colors.black);
           Get.bottomSheet(
             ReviewBottomSheet(conversationId: _conversationId),
             isDismissible: false,
@@ -136,7 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         },
         onError: (msg) {
-          Get.snackbar("Error", msg);
+          Get.snackbar("Error", msg, backgroundColor: Colors.white, colorText: Colors.black);
         },
       );
     }

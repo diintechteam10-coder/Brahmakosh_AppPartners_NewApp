@@ -183,7 +183,7 @@ class VerifyMobileNoOtpScreen extends StatelessWidget {
                   onTap: () {
                     controller.resendMobileOtp().then((e) {
                       if (e == true) {
-                        Get.snackbar("Otp Sent", "Otp Sent Successfully");
+                        Get.snackbar("Otp Sent", "Otp Sent Successfully", backgroundColor: Colors.white, colorText: Colors.black);
                       }
                     });
                   },

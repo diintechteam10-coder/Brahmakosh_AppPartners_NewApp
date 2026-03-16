@@ -12,11 +12,59 @@ import '../bloc/call_bloc.dart';
 import '../models/call_history_response.dart';
 import '../repository/call_repository.dart';
 
+import 'dart:io';
+
 class CallLogsScreen extends StatelessWidget {
   const CallLogsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isIOS) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: Colours.appBackgroundGradient,
+          ),
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.history_toggle_off,
+                      size: 64.sp,
+                      color: Colours.orangeDE8E0C,
+                    ),
+                    16.h.verticalSpace,
+                    Text(
+                      'Call History',
+                      style: TextStyle(
+                        fontFamily: Fonts.bold,
+                        fontSize: 22.sp,
+                        color: Colours.white,
+                      ),
+                    ),
+                    16.h.verticalSpace,
+                    Text(
+                      'This feature is coming soon.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: Fonts.medium,
+                        fontSize: 16.sp,
+                        color: Colours.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return BlocProvider(
       create: (context) =>
           CallBloc(repository: CallRepository())
@@ -160,7 +208,7 @@ class _CallHistoryTile extends StatefulWidget {
 }
 
 class _CallHistoryTileState extends State<_CallHistoryTile> {
-  late AudioPlayer _audioPlayer;
+  AudioPlayer? _audioPlayer;
 
   bool _isPlaying = false;
   bool _isLoadingAudio = false;
@@ -168,14 +216,11 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
 
-  @override
-  void initState() {
-    super.initState();
-
+  void _setupAudioPlayer() {
     _audioPlayer = AudioPlayer();
 
     // Player state listener
-    _audioPlayer.onPlayerStateChanged.listen((state) {
+    _audioPlayer!.onPlayerStateChanged.listen((state) {
       if (!mounted) return;
 
       setState(() {
@@ -183,21 +228,21 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
       });
     });
 
-    _audioPlayer.onDurationChanged.listen((d) {
+    _audioPlayer!.onDurationChanged.listen((d) {
       if (!mounted) return;
       setState(() => _duration = d);
     });
 
-    _audioPlayer.onPositionChanged.listen((p) {
+    _audioPlayer!.onPositionChanged.listen((p) {
       if (!mounted) return;
       setState(() => _position = p);
     });
 
     // When audio completes
-    _audioPlayer.onPlayerComplete.listen((event) async {
+    _audioPlayer!.onPlayerComplete.listen((event) async {
       if (!mounted) return;
 
-      await _audioPlayer.seek(Duration.zero);
+      await _audioPlayer!.seek(Duration.zero);
 
       setState(() {
         _isPlaying = false;
@@ -208,7 +253,7 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    _audioPlayer?.dispose();
     super.dispose();
   }
 
@@ -224,29 +269,35 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
       return;
     }
 
+    print("--- AUDIO URL: $recording ---");
+
     try {
+      if (_audioPlayer == null) {
+        _setupAudioPlayer();
+      }
+
       if (_isPlaying) {
-        await _audioPlayer.pause();
+        await _audioPlayer!.pause();
         return;
       }
 
       setState(() => _isLoadingAudio = true);
 
       if (_currentUrl != recording) {
-        await _audioPlayer.stop();
-        await _audioPlayer.play(UrlSource(recording));
+        await _audioPlayer!.stop();
+        await _audioPlayer!.play(UrlSource(recording));
         setState(() {
           _currentUrl = recording;
         });
       } else {
-        await _audioPlayer.resume();
+        await _audioPlayer!.resume();
       }
     } catch (e) {
       debugPrint("AUDIO ERROR: $e");
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Unable to play recording")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Unable to play recording: $e")),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoadingAudio = false);
@@ -450,8 +501,9 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
                       activeColor: Colours.orangeDE8E0C,
                       inactiveColor: Colours.white.withOpacity(0.3),
                       onChanged: (value) async {
+                        if (_audioPlayer == null) return;
                         final position = Duration(milliseconds: value.toInt());
-                        await _audioPlayer.seek(position);
+                        await _audioPlayer!.seek(position);
                       },
                     ),
                   ),
@@ -472,322 +524,3 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
     );
   }
 }
-
-// class _CallHistoryTileState extends State<_CallHistoryTile> {
-//   late AudioPlayer _audioPlayer;
-//   bool _isPlaying = false;
-//   bool _isLoadingAudio = false;
-
-//   // @override
-//   @override
-//   void initState() {
-//     super.initState();
-
-//     _audioPlayer = AudioPlayer();
-
-//     _audioPlayer.playerStateStream.listen((state) {
-//       if (!mounted) return;
-
-//       setState(() {
-//         _isPlaying = state.playing;
-
-//         if (state.processingState == ProcessingState.completed) {
-//           _audioPlayer.seek(Duration.zero);
-//           _audioPlayer.pause();
-//           _isPlaying = false;
-//         }
-//       });
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _audioPlayer.stop();
-//     _audioPlayer.dispose();
-//     super.dispose();
-//   }
-//   // void initState() {
-//   //   super.initState();
-//   //   _audioPlayer = AudioPlayer();
-//   //   _audioPlayer.playerStateStream.listen((state) {
-//   //     if (mounted) {
-//   //       setState(() {
-//   //         _isPlaying = state.playing;
-//   //         if (state.processingState == ProcessingState.completed) {
-//   //           _isPlaying = false;
-//   //           _audioPlayer.seek(Duration.zero);
-//   //           _audioPlayer.pause();
-//   //         }
-//   //       });
-//   //     }
-//   //   });
-//   // }
-
-//   // @override
-//   // void dispose() {
-//   //   _audioPlayer.dispose();
-//   //   super.dispose();
-//   // }
-
-//   Future<void> _togglePlayPause() async {
-//     final key =
-//         widget.item.voiceRecordings?.partner?.key ??
-//         widget.item.voiceRecordings?.user?.key;
-
-//     if (key == null || key.isEmpty) {
-//       ScaffoldMessenger.of(
-//         context,
-//       ).showSnackBar(const SnackBar(content: Text('Recording not available $e')));
-//       return;
-//     }
-
-//     try {
-//       if (_isPlaying) {
-//         await _audioPlayer.pause();
-//         return;
-//       }
-
-//       setState(() => _isLoadingAudio = true);
-
-//       final signedUrl = await context
-//           .read<CallBloc>()
-//           .repository
-//           .fetchSignedUrl(key);
-
-//       if (signedUrl == null || signedUrl.isEmpty) {
-//         throw Exception("Signed URL not received");
-//       }
-
-//       print("SIGNED URL: $signedUrl");
-
-//       // Reset player before loading new source
-//       await _audioPlayer.stop();
-//       await _audioPlayer.setUrl(signedUrl);
-
-//       await _audioPlayer.play();
-//     } catch (e) {
-//       print("AUDIO ERROR: $e");
-
-//       ScaffoldMessenger.of(
-//         context,
-//       ).showSnackBar( SnackBar(content: Text("Unable to play recording $e")));
-//     } finally {
-//       if (mounted) {
-//         setState(() => _isLoadingAudio = false);
-//       }
-//     }
-//   }
-
-//   // Future<void> _togglePlayPause() async {
-//   //   final key =
-//   //       widget.item.voiceRecordings?.partner?.key ??
-//   //       widget.item.voiceRecordings?.user?.key;
-
-//   //   if (key == null || key.isEmpty) {
-//   //     ScaffoldMessenger.of(context).showSnackBar(
-//   //       const SnackBar(content: Text('Recording not available')),
-//   //     );
-//   //     return;
-//   //   }
-
-//   //   try {
-//   //     if (_isPlaying) {
-//   //       await _audioPlayer.pause();
-//   //       return;
-//   //     }
-
-//   //     setState(() => _isLoadingAudio = true);
-
-//   //     final signedUrl = await context
-//   //         .read<CallBloc>()
-//   //         .repository
-//   //         .fetchSignedUrl(key);
-
-//   //     if (signedUrl == null || signedUrl.isEmpty) {
-//   //       throw Exception("Signed URL not received");
-//   //     }
-
-//   //     print("SIGNED URL: $signedUrl");
-
-//   //     // Reset player before loading new source
-//   //     await _audioPlayer.stop();
-//   //     await _audioPlayer.setAudioSource(
-//   //       AudioSource.uri(Uri.parse(signedUrl)),
-//   //     );
-
-//   //     await _audioPlayer.play();
-
-//   //   } catch (e) {
-//   //     print("AUDIO ERROR: $e");
-
-//   //     ScaffoldMessenger.of(context).showSnackBar(
-//   //       const SnackBar(
-//   //         content: Text("Unable to play recording"),
-//   //       ),
-//   //     );
-//   //   } finally {
-//   //     if (mounted) {
-//   //       setState(() => _isLoadingAudio = false);
-//   //     }
-//   //   }
-//   // }
-
-//   String _formatDuration(int totalSeconds) {
-//     if (totalSeconds < 0) return "00:00";
-//     final minutes = totalSeconds ~/ 60;
-//     final seconds = totalSeconds % 60;
-//     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     String formattedDate = '';
-//     if (widget.item.createdAt != null) {
-//       formattedDate = DateFormat(
-//         'dd MMM yyyy, hh:mm a',
-//       ).format(widget.item.createdAt!.toLocal());
-//     }
-
-//     final userName = widget.item.from?.id == widget.item.to?.id
-//         ? "Unknown"
-//         : (widget.item.from?.type == "user"
-//                   ? widget.item.from?.name
-//                   : widget.item.to?.name) ??
-//               "User";
-
-//     String statusText = widget.item.status;
-//     Color statusColor = Colours.grey75879A;
-//     if (statusText.toLowerCase() == 'ended') {
-//       statusText = 'Completed';
-//       statusColor = Colours.green26B100;
-//     } else if (statusText.toLowerCase() == 'busy') {
-//       statusText = 'Busy / Missed';
-//       statusColor = Colors.redAccent;
-//     } else {
-//       statusText = '${statusText[0].toUpperCase()}${statusText.substring(1)}';
-//     }
-
-//     final hasRecording =
-//         (widget.item.voiceRecordings?.partner?.key != null) ||
-//         (widget.item.voiceRecordings?.user?.key != null);
-
-//     return Container(
-//       margin: EdgeInsets.only(bottom: 12.h),
-//       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-//       decoration: BoxDecoration(
-//         color: Colours.white.withOpacity(0.05),
-//         borderRadius: BorderRadius.circular(16.r),
-//         border: Border.all(color: Colours.white.withOpacity(0.3), width: 0.5),
-//       ),
-//       child: Row(
-//         crossAxisAlignment: CrossAxisAlignment.center,
-//         children: [
-//           Container(
-//             padding: EdgeInsets.all(12.w),
-//             decoration: BoxDecoration(
-//               color: Colours.white,
-//               borderRadius: BorderRadius.circular(12.r),
-//             ),
-//             child: Icon(
-//               Icons.phone_in_talk_outlined,
-//               color: Colours.primary,
-//               size: 24.sp,
-//             ),
-//           ),
-//           16.horizontalSpace,
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   userName,
-//                   style: TextStyle(
-//                     fontSize: 16.sp,
-//                     fontFamily: Fonts.bold,
-//                     color: Colours.white,
-//                   ),
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                 ),
-//                 4.verticalSpace,
-//                 Text(
-//                   formattedDate,
-//                   style: TextStyle(
-//                     fontSize: 12.sp,
-//                     fontFamily: Fonts.regular,
-//                     color: Colours.white.withOpacity(0.7),
-//                   ),
-//                 ),
-//                 4.verticalSpace,
-//                 Row(
-//                   children: [
-//                     Text(
-//                       statusText,
-//                       style: TextStyle(
-//                         fontSize: 12.sp,
-//                         fontFamily: Fonts.bold,
-//                         color: statusColor,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-
-//           if (hasRecording) ...[
-//             GestureDetector(
-//               onTap: _togglePlayPause,
-//               child: Container(
-//                 padding: EdgeInsets.all(8.w),
-//                 decoration: BoxDecoration(
-//                   color: Colours.orangeDE8E0C.withOpacity(0.2),
-//                   shape: BoxShape.circle,
-//                 ),
-//                 child: _isLoadingAudio
-//                     ? SizedBox(
-//                         width: 20.sp,
-//                         height: 20.sp,
-//                         child: CircularProgressIndicator(
-//                           color: Colours.orangeDE8E0C,
-//                           strokeWidth: 2,
-//                         ),
-//                       )
-//                     : Icon(
-//                         _isPlaying ? Icons.pause : Icons.play_arrow,
-//                         color: Colours.orangeDE8E0C,
-//                         size: 20.sp,
-//                       ),
-//               ),
-//             ),
-//             12.horizontalSpace,
-//           ],
-
-//           Column(
-//             crossAxisAlignment: CrossAxisAlignment.end,
-//             mainAxisAlignment: MainAxisAlignment.center,
-//             children: [
-//               Text(
-//                 '${widget.item.billableMinutes} Min',
-//                 style: TextStyle(
-//                   fontSize: 16.sp,
-//                   fontFamily: Fonts.bold,
-//                   color: Colours.white,
-//                 ),
-//               ),
-//               4.verticalSpace,
-//               Text(
-//                 _formatDuration(widget.item.durationSeconds),
-//                 style: TextStyle(
-//                   fontSize: 12.sp,
-//                   fontFamily: Fonts.regular,
-//                   color: Colours.grey75879A,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

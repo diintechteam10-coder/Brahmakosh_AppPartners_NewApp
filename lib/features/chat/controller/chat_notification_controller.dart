@@ -2,6 +2,7 @@ import 'package:brahmakoshpartners/core/services/socket/socket_events.dart';
 import 'package:brahmakoshpartners/core/services/socket/socket_service.dart';
 import 'package:brahmakoshpartners/features/chat/controller/get _message_controller.dart';
 import 'package:brahmakoshpartners/features/conversations/repository/conversation_repository.dart';
+import 'package:brahmakoshpartners/features/home/controllers/new_chat_request_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
@@ -53,7 +54,7 @@ class ChatNotificationController extends GetxController {
   Future<void> _syncAndJoinRooms() async {
     try {
       debugPrint(
-        "🔔 ChatNotificationController: Syncing active conversations for room joining...",
+        "🔔 ChatNotificationController: Syncing active and pending conversations for room joining...",
       );
       final repo = ConversationRepository();
       // Fetch both accepted and active just in case
@@ -67,16 +68,34 @@ class ChatNotificationController extends GetxController {
       }
 
       debugPrint(
-        "🔔 ChatNotificationController: Found ${convs.length} conversations to join",
+        "🔔 ChatNotificationController: Found ${convs.length} accepted conversations to join",
       );
 
       for (var c in convs) {
         final id = c['conversationId']?.toString() ?? c['_id']?.toString();
         if (id != null) {
-          debugPrint("🔔 ChatNotificationController: Joining room: $id");
+          debugPrint("🔔 ChatNotificationController: Joining Accepted Room: $id");
           _socketService.emit(SocketEvents.joinConversation, {
             'conversationId': id,
           });
+        }
+      }
+
+      // Also join rooms for pending requests so we get cancellation events
+      if (Get.isRegistered<ConversationRequestController>()) {
+        final pendingCtrl = Get.find<ConversationRequestController>();
+        debugPrint(
+          "🔔 ChatNotificationController: Joining ${pendingCtrl.requests.length} pending request rooms",
+        );
+        for (var r in pendingCtrl.requests) {
+          if (r.conversationId.isNotEmpty) {
+            debugPrint(
+              "🔔 ChatNotificationController: Joining Pending Room: ${r.conversationId}",
+            );
+            _socketService.emit(SocketEvents.joinConversation, {
+              'conversationId': r.conversationId,
+            });
+          }
         }
       }
     } catch (e) {
@@ -89,9 +108,36 @@ class ChatNotificationController extends GetxController {
 
     // Also listen for new conversation requests
     _socketService.on(SocketEvents.newConversationRequest, (data) {
+      final now = DateTime.now();
       debugPrint(
-        "🔔 ChatNotificationController: Received newConversationRequest: $data",
+        "🔔 [$now] [CANCELLATION_CHECK] ChatNotificationController: Received newConversationRequest: $data",
       );
+      if (data is Map && data['conversationId'] != null) {
+        final convId = data['conversationId'].toString();
+        debugPrint("🔔 [$now] [CANCELLATION_CHECK] ChatNotificationController: Joining room for pending request: $convId");
+        _socketService.emit(SocketEvents.joinConversation, {
+          'conversationId': convId,
+        });
+      }
+    });
+
+    // Added listeners for cancellation to clear banners in real-time
+    _socketService.on(SocketEvents.conversationCancelled, (data) {
+      final now = DateTime.now();
+      debugPrint("🔴 [$now] [CANCELLATION_EVENT] ChatNotificationController: Received cancellation: $data");
+      final convId = (data is Map) ? data['conversationId']?.toString() : null;
+      if (convId != null) {
+        clearNotification(convId);
+      }
+    });
+
+    _socketService.on(SocketEvents.conversationEnded, (data) {
+      final now = DateTime.now();
+      debugPrint("🔴 [$now] [CANCELLATION_EVENT] ChatNotificationController: Received ended: $data");
+      final convId = (data is Map) ? data['conversationId']?.toString() : null;
+      if (convId != null) {
+        clearNotification(convId);
+      }
     });
 
     _socketService.on(SocketEvents.newMessage, (data) {

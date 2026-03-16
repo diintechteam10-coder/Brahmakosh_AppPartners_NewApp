@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client_new/socket_io_client_new.dart' as IO;
 
+
 class SocketService {
   SocketService._();
   static final SocketService I = SocketService._();
@@ -35,10 +36,16 @@ class SocketService {
     debugPrint("🔌 [SOCKET] IO instance created, calling connect()...");
 
     _socket!.onAny((event, data) {
-      debugPrint("📡 [SOCKET_ANY] Event: $event | Data: $data");
+      final now = DateTime.now();
+      final isCancel = event.toString().contains("cancel") ||
+          data.toString().contains("cancel") ||
+          event.toString().contains("ended");
+      final tag = isCancel ? "🔴 [CANCELLATION_EVENT]" : "📡 [SOCKET_ANY]";
+      debugPrint("$tag [$now] Event: $event | Data: $data");
     });
 
     _socket!.onConnect((_) {
+      debugPrint("🔌 [SOCKET] Connected successfully!");
       _connectedCtrl.add(true);
       debugPrint("🟢 SOCKET CONNECTED ${_socket!.id}");
 
@@ -49,6 +56,12 @@ class SocketService {
           _socket!.on(event, h);
         }
       });
+    });
+
+    // Added generic notification listener
+    _socket!.on("notification", (data) {
+      final now = DateTime.now();
+      debugPrint("📡 [GENERIC_NOTIFICATION] [$now] Data: $data");
     });
 
     _socket!.onDisconnect((_) {

@@ -260,7 +260,7 @@ class _SendOtpEmailScreenState extends State<SendOtpEmailScreen> {
                                     Get.snackbar(
                                       'Error',
                                       'Could not launch URL',
-                                    );
+                                    backgroundColor: Colors.white, colorText: Colors.black);
                                   }
                                 },
                             ),

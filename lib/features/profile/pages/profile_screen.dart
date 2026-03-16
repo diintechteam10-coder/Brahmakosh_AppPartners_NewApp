@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
 import 'package:brahmakoshpartners/core/const/fonts.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../controller/profile_controller.dart';
 import '../models/profile_model.dart';
@@ -157,8 +158,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // 24.verticalSpace,
 
                       // ─── 8. SOCIAL MEDIA ───────────────────
-                      _SocialMediaCard(socialMedia: p.socialMedia),
-                      24.verticalSpace,
+                      // _SocialMediaCard(socialMedia: p.socialMedia),
+                      // 24.verticalSpace,
 
                       // ─── 10. ACCOUNT SETTINGS ──────────────
                       _SectionHeader(title: 'Account Settings'),
@@ -175,7 +176,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.gpp_maybe_outlined,
                         title: 'Privacy Policy',
                         subtitle: 'Data usage and security',
-                        onTap: () {},
+                        onTap: () async {
+                          final Uri url = Uri.parse(
+                            'https://www.brahmakosh.com/privacy-policy',
+                          );
+                          if (!await launchUrl(url)) {
+                            Get.snackbar(
+                              'Error',
+                              'Could not open privacy policy',
+                            backgroundColor: Colors.white, colorText: Colors.black);
+                          }
+                        },
+                      ),
+                      12.verticalSpace,
+
+                      _AccountSettingTile(
+                        icon: Icons.delete_outline,
+                        title: 'Delete Account',
+                        subtitle: 'Permanently remove your account and data',
+                        iconColor: Colors.redAccent,
+                        titleColor: Colors.redAccent,
+                        onTap: () {
+                          Get.defaultDialog(
+                            title: "Delete Account",
+                            middleText:
+                                "Are you sure you want to permanently delete your Brahmakosh account? This action cannot be undone.",
+                            textConfirm: "Delete",
+                            textCancel: "Cancel",
+                            confirmTextColor: Colors.white,
+                            buttonColor: Colors.redAccent,
+                            onConfirm: () {
+                              Get.back(); // Close dialog
+                              final email = p
+                                  .email; // Use the partner's email from the profile model
+                              _launchDeleteAccountEmail(context, email);
+                              print("Deletion email $email");
+                            },
+                          );
+                        },
                       ),
                       12.verticalSpace,
 
@@ -281,6 +319,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _launchDeleteAccountEmail(
+    BuildContext context,
+    String email,
+  ) async {
+    const recipient = 'contact@brahmakosh.com';
+    const subject = 'Account Deletion Request - Brahmakosh App';
+    final body =
+        'Dear Brahmakosh Team,\n\n'
+        'I would like to request the deletion of my account associated with the following email address:\n\n'
+        'Registered Email: $email\n\n'
+        'Please delete my account and all associated data from your platform.\n\n'
+        'Thank you.\n';
+
+    final Uri emailLaunchUri = Uri.parse(
+      'mailto:$recipient?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
+    );
+
+    try {
+      final bool launched = await launchUrl(
+        emailLaunchUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not open Mail app. Please email contact@brahmakosh.com directly.',
+              ),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Could not launch email: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not open Mail app. Please email contact@brahmakosh.com directly.',
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -1133,12 +1220,16 @@ class _AccountSettingTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final Color? iconColor;
+  final Color? titleColor;
 
   const _AccountSettingTile({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.iconColor,
+    this.titleColor,
   });
 
   @override
@@ -1158,10 +1249,14 @@ class _AccountSettingTile extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: Colours.orangeDE8E0C.withOpacity(0.15),
+                color: (iconColor ?? Colours.orangeDE8E0C).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(icon, color: Colours.orangeDE8E0C, size: 22.sp),
+              child: Icon(
+                icon,
+                color: iconColor ?? Colours.orangeDE8E0C,
+                size: 22.sp,
+              ),
             ),
             14.horizontalSpace,
             Expanded(
@@ -1173,7 +1268,7 @@ class _AccountSettingTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontFamily: Fonts.semiBold,
-                      color: Colours.white,
+                      color: titleColor ?? Colours.white,
                     ),
                   ),
                   4.verticalSpace,

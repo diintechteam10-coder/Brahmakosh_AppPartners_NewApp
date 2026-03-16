@@ -156,7 +156,7 @@
 //                             'Invalid Details',
 //                             'Please correct the highlighted fields',
 //                             snackPosition: SnackPosition.TOP,
-//                           );
+//                           , backgroundColor: Colors.white, colorText: Colors.black);
 //                           return;
 //                         }
 
@@ -475,7 +475,7 @@ class CompleteProfileScreen extends StatelessWidget {
                                             "Location Updated",
                                             "Latitude & Longitude fetched",
                                             snackPosition: SnackPosition.TOP,
-                                          );
+                                          backgroundColor: Colors.white, colorText: Colors.black);
                                         }
                                       },
                                 icon: controller.isLocationLoading.value
@@ -600,7 +600,7 @@ class CompleteProfileScreen extends StatelessWidget {
                             'Invalid Details',
                             'Please correct the highlighted fields',
                             snackPosition: SnackPosition.TOP,
-                          );
+                          backgroundColor: Colors.white, colorText: Colors.black);
                           return;
                         }
 
@@ -609,7 +609,7 @@ class CompleteProfileScreen extends StatelessWidget {
                             'Missing Skills',
                             'Please select at least 1 skill',
                             snackPosition: SnackPosition.TOP,
-                          );
+                          backgroundColor: Colors.white, colorText: Colors.black);
                           return;
                         }
 
@@ -618,7 +618,7 @@ class CompleteProfileScreen extends StatelessWidget {
                             'Missing Consultation Mode',
                             'Please select at least 1 mode',
                             snackPosition: SnackPosition.TOP,
-                          );
+                           colorText: Colors.black);
                           return;
                         }
 
@@ -627,7 +627,7 @@ class CompleteProfileScreen extends StatelessWidget {
                             'Missing Language',
                             'Please select at least 1 language',
                             snackPosition: SnackPosition.TOP,
-                          );
+                          backgroundColor: Colors.white, colorText: Colors.black);
                           return;
                         }
 
@@ -636,7 +636,7 @@ class CompleteProfileScreen extends StatelessWidget {
                             'Missing Availability',
                             'Please select Weekdays/Weekends',
                             snackPosition: SnackPosition.TOP,
-                          );
+                          backgroundColor: Colors.white, colorText: Colors.black);
                           return;
                         }
 
@@ -647,7 +647,8 @@ class CompleteProfileScreen extends StatelessWidget {
                             "Location Required",
                             "Please tap the current location icon first",
                             snackPosition: SnackPosition.TOP,
-                          );
+                          backgroundColor: Colors.white,
+                           colorText: Colors.black);
                           return;
                         }
 

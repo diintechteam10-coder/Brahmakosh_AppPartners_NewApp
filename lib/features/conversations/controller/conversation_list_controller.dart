@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 // import 'package:brahmakoshpartners/core/errors/exception.dart';
 // import 'package:brahmakoshpartners/core/services/socket/socket_service.dart';
 // import 'package:brahmakoshpartners/core/services/socket/socket_events.dart';
@@ -109,10 +110,10 @@
 //       conversations.assignAll(list.cast<Map<String, dynamic>>());
 //       return true;
 //     } on NoInternetException {
-//       Get.snackbar("No Internet !", "Internet connection not available");
+//       Get.snackbar("No Internet !", "Internet connection not available", backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } on ApiException catch (e) {
-//       Get.snackbar("Error !", e.message);
+//       Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
 //       return false;
 //     } finally {
 //       isLoading.value = false;
@@ -214,7 +215,7 @@ class ConversationController extends GetxController {
           Get.snackbar(
             "Busy Mode",
             "You reached 5 active chats. Status set to Busy.",
-          );
+          backgroundColor: Colors.white, colorText: Colors.black);
         });
       }
     } else {
@@ -223,7 +224,7 @@ class ConversationController extends GetxController {
       if (currentStatus.value == 'busy') {
         _homeRepository.updatePartnerStatus(status: 'online').then((_) {
           currentStatus.value = 'online';
-          Get.snackbar("Online Mode", "You are now Online (Chats < 5).");
+          Get.snackbar("Online Mode", "You are now Online (Chats < 5).", backgroundColor: Colors.white, colorText: Colors.black);
         });
       }
     }
@@ -353,10 +354,10 @@ class ConversationController extends GetxController {
       _checkConcurrency(); // ✅ Check limit
       return true;
     } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString());
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message);
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } finally {
       isLoading.value = false;

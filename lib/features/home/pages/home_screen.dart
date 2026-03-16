@@ -47,6 +47,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   HomeStatus _status = HomeStatus.offline;
   bool _isDialogOpen = false;
+  String? _activeConversationId;
 
   final SocketService _socket = Get.find<SocketService>();
   final ConversationRepository _conversationRepo = ConversationRepository();
@@ -72,13 +73,15 @@ class _HomeScreenState extends State<HomeScreen> {
     ConversationAstrologyController(),
   );
 
-  final RxList<Map<String, dynamic>> _newRequests =
-      <Map<String, dynamic>>[].obs;
+  final RxList<ConversationRequest> _newRequests =
+      <ConversationRequest>[].obs;
 
   Timer? _pollTimer;
+  Timer? _dialogPollTimer;
   bool _isProcessingQueue = false;
 
   void Function(dynamic data)? _incomingRequestHandler;
+  void Function(dynamic data)? _cancellationHandler;
 
   @override
   void initState() {
@@ -87,27 +90,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _incomingRequestHandler = (data) {
       if (!mounted) return;
-      debugPrint("🔔 New Realtime Chat Request: $data");
 
+      ConversationRequest? request;
       if (data is Map<String, dynamic>) {
-        final convId = data['conversationId']?.toString();
-        if (convId != null) {
-          final alreadyInApi = _reqCtrl.requests.any(
-            (r) => r.conversationId == convId,
-          );
-          final alreadyInNew = _newRequests.any(
-            (r) => r['conversationId']?.toString() == convId,
-          );
-          if (!alreadyInApi && !alreadyInNew) _newRequests.add(data);
-        } else {
-          _newRequests.add(data);
-        }
+        request = ConversationRequest.fromJson(data);
+      } else if (data is ConversationRequest) {
+        request = data;
       }
 
+      if (request != null && !_newRequests.any((r) => r.conversationId == request?.conversationId)) {
+        _newRequests.add(request);
+      }
       _checkAndShowNextRequest();
     };
 
+    _cancellationHandler = (data) {
+      if (!mounted) return;
+      final now = DateTime.now();
+      debugPrint("🔕 [$now] [CANCELLATION_CHECK] Cancellation Received: $data");
+
+      final cancelledId = (data is Map) ? data['conversationId']?.toString() : null;
+      if (cancelledId != null) {
+        _removeRequest(cancelledId);
+        _reqCtrl.requests.removeWhere((r) => r.conversationId == cancelledId);
+
+        if (_isDialogOpen && _activeConversationId == cancelledId) {
+          debugPrint("🔕 [CANCELLATION_CHECK] Auto-closing dialog for $cancelledId");
+          Navigator.pop(context);
+        }
+      }
+    };
+
     _socket.on(SocketEvents.newConversationRequest, _incomingRequestHandler!);
+    _socket.on(SocketEvents.conversationCancelled, _cancellationHandler!);
+    _socket.on(SocketEvents.conversationEnded, _cancellationHandler!);
 
     // Start processing queue if already online
     if (_profileCtrl.status.value == 'online') {
@@ -121,6 +137,22 @@ class _HomeScreenState extends State<HomeScreen> {
         _changeStatus(HomeStatus.onlineSearching);
       }
     });
+
+    // Handle re-joining rooms on reconnection for displayed requests
+    _socket.connected$.listen((connected) {
+      if (connected && mounted) {
+        debugPrint(
+          "📥 [CANCELLATION_CHECK] HomeScreen: Socket Reconnected, re-joining rooms for ${_newRequests.length} pending requests",
+        );
+        for (var r in _newRequests) {
+          if (r.conversationId.isNotEmpty) {
+            _socket.emit(SocketEvents.joinConversation, {
+              'conversationId': r.conversationId,
+            });
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -131,6 +163,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _incomingRequestHandler!,
       );
     }
+    if (_cancellationHandler != null) {
+      _socket.off(
+        SocketEvents.conversationCancelled,
+        _cancellationHandler!,
+      );
+    }
+    _stopDialogPolling();
     _stopPolling();
     super.dispose();
   }
@@ -172,20 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .toList();
       if (pendingApi.isNotEmpty) {
         final first = pendingApi.first;
-        final concerns =
-            first.userAstrology?.additionalInfo?.concerns ??
-            first.userAstrologyData?.additionalInfo?.concerns ??
-            "Consultation";
-
-        _onIncomingRequest({
-          "conversationId": first.conversationId,
-          "user": {
-            "profile": {"name": first.userId?.profile?.name},
-          },
-          "userAstrology": {
-            "additionalInfo": {"concerns": concerns},
-          },
-        });
+        _onIncomingRequest(first);
         return;
       }
     } finally {
@@ -194,9 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String? _extractConversationId(dynamic data) {
-    if (data is! Map) return null;
-    final convId = data["conversationId"]?.toString();
-    if (convId != null && convId.trim().isNotEmpty) return convId;
+    if (data is ConversationRequest) return data.conversationId;
+    if (data is Map) return data["conversationId"]?.toString();
     return null;
   }
 
@@ -225,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await _statusCtrl.updateStatus(mapped);
 
       if (_statusCtrl.error.value.isNotEmpty) {
-        Get.snackbar("Error", _statusCtrl.error.value);
+        Get.snackbar("Error", _statusCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
         return;
       }
 
@@ -237,13 +262,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final token = await Tokens.token;
         if (token == null || token.trim().isEmpty) {
-          Get.snackbar("Error", "Token missing. Please login again.");
+          Get.snackbar("Error", "Token missing. Please login again.", backgroundColor: Colors.white, colorText: Colors.black);
           return;
         }
 
         _socket.connect(token.trim());
         WebRtcService.I.init();
+        
+        // Fetch existing requests and join their rooms
         await _reqCtrl.fetchRequests();
+        for (final r in _reqCtrl.requests) {
+          _socket.emit(SocketEvents.joinConversation, {'conversationId': r.conversationId});
+        }
+        
         _startPolling();
         _checkAndShowNextRequest();
       } else {
@@ -253,13 +284,22 @@ class _HomeScreenState extends State<HomeScreen> {
         _reqCtrl.clear();
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
     }
   }
 
   void _onIncomingRequest(dynamic data) {
+    _activeConversationId = _extractConversationId(data);
+    if (_activeConversationId != null) {
+      debugPrint("📥 [CANCELLATION_CHECK] HomeScreen: Joining room for request: $_activeConversationId");
+      _socket.emit(SocketEvents.joinConversation, {'conversationId': _activeConversationId});
+    }
+
     setState(() => _isDialogOpen = true);
     widget.onDialogVisibilityChanged?.call(true);
+
+    // ✅ Start fast-polling to detect cancellations (backend doesn't emit socket events)
+    _startDialogPolling();
 
     showDialog(
       context: context,
@@ -269,14 +309,14 @@ class _HomeScreenState extends State<HomeScreen> {
         canPop: false,
         child: Obx(() {
           return IncomingRequestDialog(
-            data: (data is Map<String, dynamic>) ? data : <String, dynamic>{},
+            data: (data is ConversationRequest) ? data.toJson() : (data is Map<String, dynamic>) ? data : <String, dynamic>{},
             isAccepting: _acceptCtrl.isLoading.value,
             isRejecting: _rejectCtrl.isLoading.value,
 
             onReject: (reason) async {
               final requestId = _extractConversationId(data);
               if (requestId == null || requestId.isEmpty) {
-                Get.snackbar("Error", "requestId missing");
+                Get.snackbar("Error", "requestId missing", backgroundColor: Colors.white, colorText: Colors.black);
                 if (mounted) Navigator.pop(context);
                 return;
               }
@@ -289,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
 
               if (_rejectCtrl.error.value.isNotEmpty) {
-                Get.snackbar("Reject Failed", _rejectCtrl.error.value);
+                Get.snackbar("Reject Failed", _rejectCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
               }
 
               if (mounted) Navigator.pop(context);
@@ -298,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onAccept: () async {
               final requestId = _extractConversationId(data);
               if (requestId == null || requestId.isEmpty) {
-                Get.snackbar("Error", "requestId missing");
+                Get.snackbar("Error", "requestId missing", backgroundColor: Colors.white, colorText: Colors.black);
                 if (mounted) Navigator.pop(context);
                 return;
               }
@@ -311,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
 
               if (_acceptCtrl.error.value.isNotEmpty) {
-                Get.snackbar("Accept Failed", _acceptCtrl.error.value);
+                Get.snackbar("Accept Failed", _acceptCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
                 if (mounted) Navigator.pop(context);
                 return;
               }
@@ -337,8 +377,12 @@ class _HomeScreenState extends State<HomeScreen> {
         }),
       ),
     ).then((_) {
+      _stopDialogPolling();
       if (mounted) {
-        setState(() => _isDialogOpen = false);
+        setState(() {
+          _isDialogOpen = false;
+          _activeConversationId = null;
+        });
         widget.onDialogVisibilityChanged?.call(false);
 
         // ✅ If dialog verified closed, remove from immediate queue to prevent loop
@@ -357,11 +401,40 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// ✅ Fast-poll while dialog is open to detect cancellation via API
+  void _startDialogPolling() {
+    _dialogPollTimer?.cancel();
+    _dialogPollTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+      if (!_isDialogOpen || _activeConversationId == null || !mounted) {
+        _stopDialogPolling();
+        return;
+      }
+
+      debugPrint("🔄 [CANCEL_POLL] Checking if request $_activeConversationId is still pending...");
+      await _reqCtrl.fetchRequests();
+
+      final stillPending = _reqCtrl.requests.any(
+        (r) => r.conversationId == _activeConversationId && (r.status == 'pending' || r.status == null),
+      );
+
+      if (!stillPending && _isDialogOpen && mounted) {
+        debugPrint("🔕 [CANCEL_POLL] Request $_activeConversationId is no longer pending! Auto-closing dialog.");
+        _removeRequest(_activeConversationId!);
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  void _stopDialogPolling() {
+    _dialogPollTimer?.cancel();
+    _dialogPollTimer = null;
+  }
+
   /// ✅ remove robustly by _id OR conversationId
   void _removeRequest(String requestId) {
     _newRequests.removeWhere((req) {
-      final a = req['_id']?.toString();
-      final b = req['conversationId']?.toString();
+      final a = req.id;
+      final b = req.conversationId;
       return a == requestId || b == requestId;
     });
   }
@@ -527,7 +600,7 @@ class _CenterContent extends StatelessWidget {
   final HomeStatus status;
   final Future<void> Function(HomeStatus) onStatusChange;
   final void Function(dynamic) onIncomingRequest;
-  final RxList<Map<String, dynamic>> newRequests;
+  final RxList<ConversationRequest> newRequests;
   final ConversationRequestController reqCtrl;
   final PartnerStatusController statusCtrl;
   final PartnerProfileController profileCtrl;
@@ -725,7 +798,7 @@ class _StatCard extends StatelessWidget {
 class _PendingRequestsList extends StatelessWidget {
   final void Function(dynamic) onIncomingRequest;
   final ConversationRequestController apiCtrl;
-  final RxList<Map<String, dynamic>> socketRequests;
+  final RxList<ConversationRequest> socketRequests;
 
   const _PendingRequestsList({
     required this.onIncomingRequest,
@@ -742,12 +815,12 @@ class _PendingRequestsList extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      final merged = <dynamic>[];
+      final merged = <ConversationRequest>[];
       merged.addAll(socketRequests);
 
       for (final r in apiCtrl.requests) {
         final already = socketRequests.any(
-          (m) => m['conversationId']?.toString() == r.conversationId,
+          (m) => m.conversationId == r.conversationId,
         );
         if (!already) merged.add(r);
       }
@@ -806,21 +879,8 @@ class _PendingRequestsList extends StatelessWidget {
             String name = 'User';
             String conversationId = '';
 
-            if (item is Map<String, dynamic>) {
-              conversationId = item['conversationId']?.toString() ?? '';
-              final userObj = (item['userId'] is Map)
-                  ? (item['userId'] as Map).cast<String, dynamic>()
-                  : <String, dynamic>{};
-              if (userObj['profile'] is Map) {
-                name =
-                    (userObj['profile'] as Map)['name']?.toString() ?? 'User';
-              } else {
-                name = userObj['name']?.toString() ?? 'User';
-              }
-            } else if (item is ConversationRequest) {
-              conversationId = item.conversationId;
-              name = item.userId!.profile!.name!;
-            }
+            conversationId = item.conversationId;
+            name = item.userId!.profile!.name!;
 
             return Container(
               margin: EdgeInsets.only(bottom: 12.h),
@@ -883,25 +943,7 @@ class _PendingRequestsList extends StatelessWidget {
                   12.horizontalSpace,
                   GestureDetector(
                     onTap: () {
-                      if (item is ConversationRequest) {
-                        final concerns =
-                            item.userAstrology?.additionalInfo?.concerns ??
-                            item.userAstrologyData?.additionalInfo?.concerns ??
-                            "Consultation";
-                        onIncomingRequest({
-                          "conversationId": item.conversationId,
-                          "user": {
-                            "_id": item.userId?.id,
-                            "email": item.userId?.email,
-                            "profile": {"name": item.userId?.profile?.name},
-                          },
-                          "userAstrology": {
-                            "additionalInfo": {"concerns": concerns},
-                          },
-                        });
-                      } else {
-                        onIncomingRequest(item);
-                      }
+                      onIncomingRequest(item);
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(

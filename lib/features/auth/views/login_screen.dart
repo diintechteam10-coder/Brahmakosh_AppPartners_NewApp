@@ -131,6 +131,15 @@ class LoginScreen extends StatelessWidget {
                     },
                   ),
 
+                  16.h.verticalSpace,
+
+                  _AppleLoginButton(
+                    onTap: () {
+                      print("[UI Debugger] Apple Login Button Tapped");
+                      controller.signInWithApple();
+                    },
+                  ),
+
                   16.verticalSpace,
 
                   Row(
@@ -190,7 +199,7 @@ class LoginScreen extends StatelessWidget {
                                 url,
                                 mode: LaunchMode.externalApplication,
                               )) {
-                                Get.snackbar('Error', 'Could not launch URL');
+                                Get.snackbar('Error', 'Could not launch URL', backgroundColor: Colors.white, colorText: Colors.black);
                               }
                             },
                         ),
@@ -234,6 +243,44 @@ class _GoogleLoginButton extends StatelessWidget {
             12.w.horizontalSpace,
             Text(
               'Continue with Google',
+              style: TextStyle(
+                fontFamily: Fonts.medium,
+                fontSize: 16.sp,
+                color: Colours.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppleLoginButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AppleLoginButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54.h,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colours.blue151E30),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.apple, color: Colours.white, size: 28.sp),
+            12.w.horizontalSpace,
+            Text(
+              'Continue with Apple',
               style: TextStyle(
                 fontFamily: Fonts.medium,
                 fontSize: 16.sp,
