@@ -248,13 +248,19 @@ class CompleteProfileScreen extends StatelessWidget {
           gradient: Colours.appBackgroundGradient,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-              20.w,
-              24.h,
-              20.w,
-              MediaQuery.of(context).viewInsets.bottom + 24.h,
-            ),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await Future.delayed(const Duration(milliseconds: 500));
+              Get.offNamed(Get.currentRoute, arguments: Get.arguments);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
+                20.w,
+                24.h,
+                20.w,
+                MediaQuery.of(context).viewInsets.bottom + 24.h,
+              ),
             child: Form(
               key: formKey,
               child: Column(
@@ -681,6 +687,7 @@ class CompleteProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
             ),
           ),
         ),

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
-import '../../profile/controller/profile_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
 import 'package:brahmakoshpartners/core/const/fonts.dart';
@@ -86,18 +84,29 @@ class _EarningViewState extends State<_EarningView> {
                   }
                 },
                 builder: (context, state) {
-                  return SingleChildScrollView(
-                    controller: _scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.only(
-                      left: 20.w,
-                      right: 20.w,
-                      top: mq.padding.top > 0 ? mq.padding.top + 24.h : 48.h,
-                      bottom: mq.padding.bottom + mq.viewInsets.bottom + 20.h,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<EarningBloc>().add(
+                        ChangeTimeTabEvent(tabIndex: state.selectedTabIndex),
+                      );
+                      // Small delay to show indicator
+                      await Future.delayed(const Duration(milliseconds: 500));
+                    },
+                    color: Colours.orangeFF9F07,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      padding: EdgeInsets.only(
+                        left: 20.w,
+                        right: 20.w,
+                        top: mq.padding.top > 0 ? mq.padding.top + 24.h : 48.h,
+                        bottom: mq.padding.bottom + mq.viewInsets.bottom + 20.h,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                         Row(
                           children: [
                             Text(
@@ -285,9 +294,10 @@ class _EarningViewState extends State<_EarningView> {
                         ],
                       ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
+            ),
             ),
           );
         },

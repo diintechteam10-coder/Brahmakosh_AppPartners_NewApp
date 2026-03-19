@@ -104,89 +104,99 @@ class _CallView extends StatelessWidget {
                   ),
                   16.h.verticalSpace,
                   Expanded(
-                    child: BlocBuilder<CallBloc, CallState>(
-                      builder: (context, state) {
-                        if (state is CallLoading || state is CallInitial) {
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              color: Colours.orangeF4BD2F,
-                            ),
-                          );
-                        }
-
-                        if (state is CallError) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${state.message}',
-                                  style: TextStyle(
-                                    color: Colors.redAccent,
-                                    fontSize: 14.sp,
-                                  ),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<CallBloc>().add(
+                          const FetchCallHistoryEvent(),
+                        );
+                        // Small delay to show indicator
+                        await Future.delayed(const Duration(milliseconds: 500));
+                      },
+                      child: BlocBuilder<CallBloc, CallState>(
+                        builder: (context, state) {
+                          if (state is CallLoading || state is CallInitial) {
+                            return SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Container(
+                                height: MediaQuery.of(context).size.height * 0.7,
+                                alignment: Alignment.center,
+                                child: const CircularProgressIndicator(
+                                  color: Colours.orangeF4BD2F,
                                 ),
-                                12.h.verticalSpace,
-                                ElevatedButton(
-                                  onPressed: () => context.read<CallBloc>().add(
-                                    const FetchCallHistoryEvent(),
-                                  ),
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                              ),
+                            );
+                          }
 
-                        if (state is CallLoaded) {
-                          return RefreshIndicator(
-                            color: Colours.orangeF4BD2F,
-                            onRefresh: () async {
-                              context.read<CallBloc>().add(
-                                const FetchCallHistoryEvent(),
-                              );
-                              await Future.delayed(const Duration(seconds: 1));
-                            },
-                            child: state.calls.isEmpty
-                                ? ListView(
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(
-                                          parent: BouncingScrollPhysics(),
-                                        ),
-                                    children: [
-                                      SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                            0.6,
-                                        child: Center(
-                                          child: Text(
-                                            'No calls found.',
-                                            style: TextStyle(
-                                              fontFamily: Fonts.medium,
-                                              fontSize: 16.sp,
-                                              color: Colours.grey75879A,
-                                            ),
+                          if (state is CallError) {
+                            return SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Container(
+                                height: MediaQuery.of(context).size.height * 0.7,
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${state.message}',
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                    12.h.verticalSpace,
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          context.read<CallBloc>().add(
+                                            const FetchCallHistoryEvent(),
                                           ),
+                                      child: const Text('Retry'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (state is CallLoaded) {
+                            if (state.calls.isEmpty) {
+                              return ListView(
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
+                                children: [
+                                  SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.6,
+                                    child: Center(
+                                      child: Text(
+                                        'No calls found.',
+                                        style: TextStyle(
+                                          fontFamily: Fonts.medium,
+                                          fontSize: 16.sp,
+                                          color: Colours.grey75879A,
                                         ),
                                       ),
-                                    ],
-                                  )
-                                : ListView.builder(
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(
-                                          parent: BouncingScrollPhysics(),
-                                        ),
-                                    itemCount: state.calls.length,
-                                    itemBuilder: (context, index) {
-                                      final item = state.calls[index];
-                                      return _CallHistoryTile(item: item);
-                                    },
+                                    ),
                                   ),
-                          );
-                        }
+                                ],
+                              );
+                            } else {
+                              return ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
+                                itemCount: state.calls.length,
+                                itemBuilder: (context, index) {
+                                  final item = state.calls[index];
+                                  return _CallHistoryTile(item: item);
+                                },
+                              );
+                            }
+                          }
 
-                        return const SizedBox.shrink();
-                      },
+                          return const SizedBox.shrink();
+                        },
+                      ),
                     ),
                   ),
                 ],

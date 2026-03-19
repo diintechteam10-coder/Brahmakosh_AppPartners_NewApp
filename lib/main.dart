@@ -11,6 +11,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:brahmakoshpartners/features/call/listeners/global_call_listener.dart';
 import 'package:brahmakoshpartners/features/chat/listeners/global_notification_listener.dart';
 
+import 'package:brahmakoshpartners/core/connectivity/bloc/connectivity_bloc.dart';
+import 'package:brahmakoshpartners/core/connectivity/service/connectivity_service.dart';
+import 'package:brahmakoshpartners/core/connectivity/widget/connectivity_overlay.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -22,7 +27,15 @@ Future<void> main() async {
 
   await AppInitializer.init();
 
-  runApp(const BrahmakoshPartners());
+  runApp(
+    RepositoryProvider(
+      create: (context) => ConnectivityService(),
+      child: BlocProvider(
+        create: (context) => ConnectivityBloc(context.read<ConnectivityService>()),
+        child: const BrahmakoshPartners(),
+      ),
+    ),
+  );
 }
 
 class BrahmakoshPartners extends StatelessWidget {
@@ -32,17 +45,21 @@ class BrahmakoshPartners extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(430, 932),
-      child: GlobalCallListener(
-        child: GetMaterialApp(
-          builder: (context, child) {
-            return GlobalNotificationListener(child: child!);
-          },
-          initialBinding: GlobalBindings(),
-          initialRoute: AppPages.splashScreen,
-          getPages: AppRoutes.routes,
-          debugShowCheckedModeBanner: false,
-        ),
-      ),
+      builder: (context, child) {
+        return GlobalCallListener(
+          child: GetMaterialApp(
+            builder: (context, child) {
+              return ConnectivityOverlay(
+                child: GlobalNotificationListener(child: child!),
+              );
+            },
+            initialBinding: GlobalBindings(),
+            initialRoute: AppPages.splashScreen,
+            getPages: AppRoutes.routes,
+            debugShowCheckedModeBanner: false,
+          ),
+        );
+      },
     );
   }
 }

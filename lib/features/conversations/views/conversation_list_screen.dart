@@ -202,13 +202,23 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       final list = _filteredForTab(controller.conversations);
                       if (list.isEmpty) {
                         return Expanded(
-                          child: Center(
-                            child: Text(
-                              'No conversations',
-                              style: TextStyle(
-                                fontFamily: Fonts.regular,
-                                fontSize: 14.sp,
-                                color: Colours.grey75879A,
+                          child: RefreshIndicator(
+                            onRefresh: _fetchAll,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Center(
+                                child: Container(
+                                  height: mq.size.height * 0.5,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'No conversations',
+                                    style: TextStyle(
+                                      fontFamily: Fonts.regular,
+                                      fontSize: 14.sp,
+                                      color: Colours.grey75879A,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -219,7 +229,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         child: RefreshIndicator(
                           onRefresh: _fetchAll,
                           child: ListView.builder(
-                            physics: const BouncingScrollPhysics(),
+                            physics: const AlwaysScrollableScrollPhysics(),
                             itemCount: list.length,
                             padding: EdgeInsets.only(
                               bottom: 24.h,

@@ -177,39 +177,32 @@ class AuthController extends GetxController {
     return true;
   }
 
-  bool _isGoogleInitialized = false;
-
   Future<void> signInWithGoogle() async {
     print("--------------------------------------------------");
-    print("🚀 [Debugger] STARTING GOOGLE SIGN-IN (API v7)");
+    print("🚀 [Debugger] STARTING GOOGLE SIGN-IN");
     print("--------------------------------------------------");
 
     try {
-      if (!_isGoogleInitialized) {
-        print("👉 [Debugger] Initializing GoogleSignIn...");
-        await gsi.GoogleSignIn.instance.initialize();
-        _isGoogleInitialized = true;
-      }
+      // Initialize with serverClientId for ID Token availability
+      print("👉 [Debugger] Initializing GoogleSignIn with Server Client ID...");
+      await gsi.GoogleSignIn.instance.initialize(
+        serverClientId: "449350149768-k2k2uu8uglq1ibntel03ai1kj9ddaqhb.apps.googleusercontent.com",
+      );
+
+      // Safety: sign out first to clear any "Account reauth failed" state
+      print("👉 [Debugger] Clearing existing Google session...");
+      try {
+        await gsi.GoogleSignIn.instance.signOut();
+      } catch (_) {}
 
       print("👉 [Debugger] Requesting Authenticate (Interactive)...");
-      final gsi.GoogleSignInAccount googleUser = await gsi.GoogleSignIn.instance
-          .authenticate();
+      final gsi.GoogleSignInAccount googleUser = await gsi.GoogleSignIn.instance.authenticate();
 
       print("✅ [Debugger] Google User: ${googleUser.email}");
-      print("👉 [Debugger] Retrieving Tokens...");
+      print("👉 [Debugger] Retrieving Authentication Tokens...");
 
-      // API v7: authentication is a getter, not a Future
-      final gsi.GoogleSignInAuthentication googleAuth =
-          googleUser.authentication;
-      print("✅ [Debugger] ID Token: ${googleAuth.idToken}");
-
-      // API v7: Access Token is retrieved via authorizationClient
-      // Requesting 'email' scope just to get a valid token container
-      final gsi.GoogleSignInClientAuthorization? authz = await googleUser
-          .authorizationClient
-          .authorizationForScopes(['email']);
-
-      print("✅ [Debugger] Access Token: ${authz?.accessToken}");
+      final gsi.GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      print("✅ [Debugger] ID Token obtained: ${googleAuth.idToken}");
 
       // 1. Save Google User details locally so other controllers can access it
       await CurrentUser().save({

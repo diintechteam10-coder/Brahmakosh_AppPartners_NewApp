@@ -93,17 +93,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 }
 
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    left: 20.w,
-                    right: 20.w,
-                    top: mq.padding.top > 0 ? mq.padding.top + 16.h : 48.h,
-                    bottom: mq.padding.bottom + mq.viewInsets.bottom + 100.h,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    await controller.fetchProfile();
+                    // Small delay for UX
+                    await Future.delayed(const Duration(milliseconds: 500));
+                  },
+                  color: Colours.orangeDE8E0C,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    padding: EdgeInsets.only(
+                      left: 20.w,
+                      right: 20.w,
+                      top: mq.padding.top > 0 ? mq.padding.top + 16.h : 48.h,
+                      bottom: mq.padding.bottom + mq.viewInsets.bottom + 100.h,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       // ─── APP BAR ───────────────────────────
                       _buildAppBar(),
                       24.verticalSpace,
@@ -229,6 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Center(child: _LogoutButton()),
                       32.verticalSpace,
                     ],
+                    ),
                   ),
                 );
               }),

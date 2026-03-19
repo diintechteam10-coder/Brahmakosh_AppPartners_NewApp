@@ -200,22 +200,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return null;
   }
 
-  // // /// ✅ MOST IMPORTANT: requestId extract (works for _id or conversationId or conversation._id)
-  // String? _extractRequestId(dynamic data) {
-  //   if (data is! Map) return null;
-
-  //   final id = data["_id"]?.toString();
-  //   if (id != null && id.trim().isNotEmpty) return id;
-
-  //   final convId = data["conversationId"]?.toString();
-  //   if (convId != null && convId.trim().isNotEmpty) return convId;
-
-  //   final convo = data["conversation"];
-  //   if (convo is Map && convo["_id"] != null) return convo["_id"].toString();
-
-  //   return null;
-  // }
-
   Future<void> _changeStatus(HomeStatus status) async {
     final mapped = status == HomeStatus.onlineSearching ? "online" : "offline";
 
@@ -373,59 +357,67 @@ class _HomeScreenState extends State<HomeScreen> {
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: EdgeInsets.only(
-                top: MediaQuery.paddingOf(context).top,
-                bottom: MediaQuery.paddingOf(context).bottom + 20.h,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: Stack(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Obx(() {
-                          final name =
-                              _profileCtrl.partner.value?.name ?? "Loading...";
-                          final loading = _statusCtrl.isLoading.value;
-                          return _Header(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await Future.wait([
+              _profileCtrl.fetchProfile(),
+              _reqCtrl.fetchRequests(),
+            ]);
+          },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.paddingOf(context).top,
+                  bottom: MediaQuery.paddingOf(context).bottom + 20.h,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Obx(() {
+                            final name =
+                                _profileCtrl.partner.value?.name ?? "Loading...";
+                            final loading = _statusCtrl.isLoading.value;
+                            return _Header(
+                              status: _status,
+                              name: name,
+                              isLoading: loading,
+                              onGoOffline: () =>
+                                  _changeStatus(HomeStatus.offline),
+                            );
+                          }),
+                          _CenterContent(
                             status: _status,
-                            name: name,
-                            isLoading: loading,
-                            onGoOffline: () =>
-                                _changeStatus(HomeStatus.offline),
-                          );
-                        }),
-                        _CenterContent(
-                          status: _status,
-                          onStatusChange: _changeStatus,
-                          onIncomingRequest: _onIncomingRequest,
-                          newRequests: _newRequests,
-                          reqCtrl: _reqCtrl,
-                          statusCtrl: _statusCtrl,
-                          profileCtrl: _profileCtrl,
-                        ),
-                      ],
-                    ),
-                    if (_isDialogOpen || widget.isDialogOpen)
-                      Positioned.fill(
-                        child: ClipRect(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                            child: Container(
-                              color: Colors.black.withOpacity(0.25),
+                            onStatusChange: _changeStatus,
+                            onIncomingRequest: _onIncomingRequest,
+                            newRequests: _newRequests,
+                            reqCtrl: _reqCtrl,
+                            statusCtrl: _statusCtrl,
+                            profileCtrl: _profileCtrl,
+                          ),
+                        ],
+                      ),
+                      if (_isDialogOpen || widget.isDialogOpen)
+                        Positioned.fill(
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                              child: Container(
+                                color: Colors.black.withOpacity(0.25),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -793,141 +785,138 @@ class _PendingRequestsList extends StatelessWidget {
         );
       }
 
-      return RefreshIndicator(
-        onRefresh: apiCtrl.fetchRequests,
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          itemCount: merged.length,
-          itemBuilder: (context, index) {
-            final item = merged[index];
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        itemCount: merged.length,
+        itemBuilder: (context, index) {
+          final item = merged[index];
 
-            String name = 'User';
-            String conversationId = '';
+          String name = 'User';
+          String conversationId = '';
 
-            if (item is Map<String, dynamic>) {
-              conversationId = item['conversationId']?.toString() ?? '';
-              final userObj = (item['userId'] is Map)
-                  ? (item['userId'] as Map).cast<String, dynamic>()
-                  : <String, dynamic>{};
-              if (userObj['profile'] is Map) {
-                name =
-                    (userObj['profile'] as Map)['name']?.toString() ?? 'User';
-              } else {
-                name = userObj['name']?.toString() ?? 'User';
-              }
-            } else if (item is ConversationRequest) {
-              conversationId = item.conversationId;
-              name = item.userId!.profile!.name!;
+          if (item is Map<String, dynamic>) {
+            conversationId = item['conversationId']?.toString() ?? '';
+            final userObj = (item['userId'] is Map)
+                ? (item['userId'] as Map).cast<String, dynamic>()
+                : <String, dynamic>{};
+            if (userObj['profile'] is Map) {
+              name =
+                  (userObj['profile'] as Map)['name']?.toString() ?? 'User';
+            } else {
+              name = userObj['name']?.toString() ?? 'User';
             }
+          } else if (item is ConversationRequest) {
+            conversationId = item.conversationId;
+            name = item.userId!.profile!.name!;
+          }
 
-            return Container(
-              margin: EdgeInsets.only(bottom: 12.h),
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colours.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: Colours.white.withOpacity(0.15)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52.w,
-                    height: 52.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                          'https://ui-avatars.com/api/?name=User&background=DE8E0C&color=fff',
-                        ),
-                        fit: BoxFit.cover,
+          return Container(
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colours.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: Colours.white.withOpacity(0.15)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 52.w,
+                  height: 52.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: const DecorationImage(
+                      image: NetworkImage(
+                        'https://ui-avatars.com/api/?name=User&background=DE8E0C&color=fff',
                       ),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  16.horizontalSpace,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: TextStyle(
-                            color: Colours.white,
-                            fontFamily: Fonts.bold,
-                            fontSize: 16.sp,
-                          ),
-                        ),
-                        4.verticalSpace,
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.phone_in_talk_outlined,
-                              color: Colours.white.withOpacity(0.7),
-                              size: 14.sp,
-                            ),
-                            6.horizontalSpace,
-                            Text(
-                              'Audio Consultation',
-                              style: TextStyle(
-                                color: Colours.white.withOpacity(0.7),
-                                fontSize: 12.sp,
-                                fontFamily: Fonts.medium,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  12.horizontalSpace,
-                  GestureDetector(
-                    onTap: () {
-                      if (item is ConversationRequest) {
-                        final concerns =
-                            item.userAstrology?.additionalInfo?.concerns ??
-                            item.userAstrologyData?.additionalInfo?.concerns ??
-                            "Consultation";
-                        onIncomingRequest({
-                          "conversationId": item.conversationId,
-                          "user": {
-                            "_id": item.userId?.id,
-                            "email": item.userId?.email,
-                            "profile": {"name": item.userId?.profile?.name},
-                          },
-                          "userAstrology": {
-                            "additionalInfo": {"concerns": concerns},
-                          },
-                        });
-                      } else {
-                        onIncomingRequest(item);
-                      }
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(color: Colours.orangeDE8E0C),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Text(
-                        'Accept',
+                ),
+                16.horizontalSpace,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
                         style: TextStyle(
-                          color: Colours.orangeDE8E0C,
+                          color: Colours.white,
                           fontFamily: Fonts.bold,
-                          fontSize: 14.sp,
+                          fontSize: 16.sp,
                         ),
+                      ),
+                      4.verticalSpace,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone_in_talk_outlined,
+                            color: Colours.white.withOpacity(0.7),
+                            size: 14.sp,
+                          ),
+                          6.horizontalSpace,
+                          Text(
+                            'Audio Consultation',
+                            style: TextStyle(
+                              color: Colours.white.withOpacity(0.7),
+                              fontSize: 12.sp,
+                              fontFamily: Fonts.medium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                12.horizontalSpace,
+                GestureDetector(
+                  onTap: () {
+                    if (item is ConversationRequest) {
+                      final concerns =
+                          item.userAstrology?.additionalInfo?.concerns ??
+                          item.userAstrologyData?.additionalInfo?.concerns ??
+                          "Consultation";
+                      onIncomingRequest({
+                        "conversationId": item.conversationId,
+                        "user": {
+                          "_id": item.userId?.id,
+                          "email": item.userId?.email,
+                          "profile": {"name": item.userId?.profile?.name},
+                        },
+                        "userAstrology": {
+                          "additionalInfo": {"concerns": concerns},
+                        },
+                      });
+                    } else {
+                      onIncomingRequest(item);
+                    }
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w,
+                      vertical: 8.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      border: Border.all(color: Colours.orangeDE8E0C),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      'Accept',
+                      style: TextStyle(
+                        color: Colours.orangeDE8E0C,
+                        fontFamily: Fonts.bold,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                ),
+              ],
+            ),
+          );
+        },
       );
     });
   }
