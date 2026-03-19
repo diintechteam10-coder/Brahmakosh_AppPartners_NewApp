@@ -1,6 +1,7 @@
 import 'package:brahmakoshpartners/core/routes/app_pages.dart';
 import 'package:brahmakoshpartners/features/auth/controller/auth_controller.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
 import 'package:brahmakoshpartners/core/const/fonts.dart';
@@ -368,6 +369,152 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
+  }
+
+  void _showLogoutPopup() {
+    Get.dialog(
+      BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: Colours.appBackground,
+              borderRadius: BorderRadius.circular(28.r),
+              border: Border.all(
+                color: Colours.white.withOpacity(0.1),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon Header
+                Container(
+                  height: 64.w,
+                  width: 64.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Colours.orangeDE8E0C, Colours.orangeEB900B],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colours.orangeDE8E0C.withOpacity(0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Colours.white,
+                    size: 32.sp,
+                  ),
+                ),
+                24.verticalSpace,
+                // Title
+                Text(
+                  "Logout",
+                  style: TextStyle(
+                    fontFamily: 'Lora',
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colours.whiteE9EAEC,
+                  ),
+                ),
+                12.verticalSpace,
+                // Message
+                Text(
+                  "Are you sure you want to log out of your account?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: Fonts.regular,
+                    color: Colours.grey75879A,
+                    height: 1.5,
+                  ),
+                ),
+                32.verticalSpace,
+                // Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Get.back(),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                        ),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontFamily: Fonts.semiBold,
+                            color: Colours.grey75879A,
+                          ),
+                        ),
+                      ),
+                    ),
+                    16.horizontalSpace,
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colours.redC73C3F.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (Get.find<AuthController>().signOut()) {
+                              Get.offAllNamed(AppPages.loginScreen);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colours.redC73C3F,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                          ),
+                          child: Text(
+                            "Logout",
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontFamily: Fonts.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1370,9 +1517,7 @@ class _LogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        if (Get.find<AuthController>().signOut()) {
-          Get.offAllNamed(AppPages.loginScreen);
-        }
+        (context.findAncestorStateOfType<_ProfileScreenState>()!)._showLogoutPopup();
       },
       borderRadius: BorderRadius.circular(16.r),
       child: Container(
@@ -1402,10 +1547,6 @@ class _LogoutButton extends StatelessWidget {
     );
   }
 }
-
-// =============================================================================
-// SHARED: GLASS CARD
-// =============================================================================
 
 class _GlassCard extends StatelessWidget {
   final Widget child;

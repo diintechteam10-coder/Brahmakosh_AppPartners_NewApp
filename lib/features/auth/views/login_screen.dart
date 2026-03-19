@@ -39,7 +39,7 @@ class LoginScreen extends StatelessWidget {
                   32.h.verticalSpace,
 
                   Text(
-                    'Brahmakoash Partners',
+                    'Brahmakosh Partners',
                     style: TextStyle(
                       fontFamily: Fonts.bold,
                       fontSize: 30.sp,

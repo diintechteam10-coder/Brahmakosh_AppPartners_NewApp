@@ -9,8 +9,8 @@ class ChatMessagesResponse {
   factory ChatMessagesResponse.fromJson(Map<String, dynamic> json) {
     return ChatMessagesResponse(
       success: json['success'] == true,
-      data: json['data'] is Map<String, dynamic>
-          ? ChatMessagesData.fromJson(json['data'] as Map<String, dynamic>)
+      data: json['data'] != null && json['data'] is Map
+          ? ChatMessagesData.fromJson((json['data'] as Map).cast<String, dynamic>())
           : null,
     );
   }
@@ -45,21 +45,21 @@ class ChatMessagesData {
           .toList(),
       conversationStatus: json['conversationStatus'] as String?,
       isAccepted: json['isAccepted'] as bool?,
-      userAstrology: json['userAstrology'] is Map<String, dynamic>
+      userAstrology: json['userAstrology'] != null && json['userAstrology'] is Map
           ? UserAstrology.fromJson(
-              json['userAstrology'] as Map<String, dynamic>,
+              (json['userAstrology'] as Map).cast<String, dynamic>(),
             )
           : null,
-      pagination: json['pagination'] is Map<String, dynamic>
-          ? Pagination.fromJson(json['pagination'] as Map<String, dynamic>)
+      pagination: json['pagination'] != null && json['pagination'] is Map
+          ? Pagination.fromJson((json['pagination'] as Map).cast<String, dynamic>())
           : null,
-      sessionDetails: json['sessionDetails'] is Map<String, dynamic>
+      sessionDetails: json['sessionDetails'] != null && json['sessionDetails'] is Map
           ? SessionDetails.fromJson(
-              json['sessionDetails'] as Map<String, dynamic>,
+              (json['sessionDetails'] as Map).cast<String, dynamic>(),
             )
           : null,
-      rating: json['rating'] is Map<String, dynamic>
-          ? Rating.fromJson(json['rating'] as Map<String, dynamic>)
+      rating: json['rating'] != null && json['rating'] is Map
+          ? Rating.fromJson((json['rating'] as Map).cast<String, dynamic>())
           : null,
     );
   }
@@ -174,7 +174,7 @@ class ChatMessage {
       id: (json['_id'] ?? '') as String,
       conversationId: json['conversationId'] as String?,
       senderId: Sender.fromJson(
-        (json['senderId'] ?? {}) as Map<String, dynamic>,
+        (json['senderId'] as Map? ?? {}).cast<String, dynamic>(),
       ),
       senderModel: json['senderModel'] as String?,
       receiverId: json['receiverId']?.toString(),
@@ -246,8 +246,8 @@ class Sender {
       name: json['name'] as String?,
       email: json['email'] as String?,
       profilePicture: json['profilePicture'] as String?,
-      profile: json['profile'] is Map<String, dynamic>
-          ? UserProfile.fromJson(json['profile'] as Map<String, dynamic>)
+      profile: json['profile'] != null && json['profile'] is Map
+          ? UserProfile.fromJson((json['profile'] as Map).cast<String, dynamic>())
           : null,
     );
   }
@@ -332,9 +332,9 @@ class UserAstrology {
 
   factory UserAstrology.fromJson(Map<String, dynamic> json) {
     return UserAstrology(
-      additionalInfo: json['additionalInfo'] is Map<String, dynamic>
+      additionalInfo: json['additionalInfo'] != null && json['additionalInfo'] is Map
           ? AdditionalInfo.fromJson(
-              json['additionalInfo'] as Map<String, dynamic>,
+              (json['additionalInfo'] as Map).cast<String, dynamic>(),
             )
           : null,
       name: json['name'] as String?,
@@ -487,11 +487,11 @@ class Rating {
 
   factory Rating.fromJson(Map<String, dynamic> json) {
     return Rating(
-      byUser: json['byUser'] is Map<String, dynamic>
-          ? RatingBy.fromJson(json['byUser'] as Map<String, dynamic>)
+      byUser: json['byUser'] != null && json['byUser'] is Map
+          ? RatingBy.fromJson((json['byUser'] as Map).cast<String, dynamic>())
           : null,
-      byPartner: json['byPartner'] is Map<String, dynamic>
-          ? RatingBy.fromJson(json['byPartner'] as Map<String, dynamic>)
+      byPartner: json['byPartner'] != null && json['byPartner'] is Map
+          ? RatingBy.fromJson((json['byPartner'] as Map).cast<String, dynamic>())
           : null,
     );
   }

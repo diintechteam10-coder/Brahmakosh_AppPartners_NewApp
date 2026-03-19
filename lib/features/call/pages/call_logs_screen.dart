@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:brahmakoshpartners/core/const/colours.dart';
@@ -11,8 +14,6 @@ import 'package:brahmakoshpartners/core/const/fonts.dart';
 import '../bloc/call_bloc.dart';
 import '../models/call_history_response.dart';
 import '../repository/call_repository.dart';
-
-import 'dart:io';
 
 class CallLogsScreen extends StatelessWidget {
   const CallLogsScreen({super.key});
@@ -208,7 +209,7 @@ class _CallHistoryTile extends StatefulWidget {
 }
 
 class _CallHistoryTileState extends State<_CallHistoryTile> {
-  AudioPlayer? _audioPlayer;
+  late AudioPlayer _audioPlayer;
 
   bool _isPlaying = false;
   bool _isLoadingAudio = false;
@@ -216,11 +217,14 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
 
-  void _setupAudioPlayer() {
+  @override
+  void initState() {
+    super.initState();
+
     _audioPlayer = AudioPlayer();
 
     // Player state listener
-    _audioPlayer!.onPlayerStateChanged.listen((state) {
+    _audioPlayer.onPlayerStateChanged.listen((state) {
       if (!mounted) return;
 
       setState(() {
@@ -228,21 +232,21 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
       });
     });
 
-    _audioPlayer!.onDurationChanged.listen((d) {
+    _audioPlayer.onDurationChanged.listen((d) {
       if (!mounted) return;
       setState(() => _duration = d);
     });
 
-    _audioPlayer!.onPositionChanged.listen((p) {
+    _audioPlayer.onPositionChanged.listen((p) {
       if (!mounted) return;
       setState(() => _position = p);
     });
 
     // When audio completes
-    _audioPlayer!.onPlayerComplete.listen((event) async {
+    _audioPlayer.onPlayerComplete.listen((event) async {
       if (!mounted) return;
 
-      await _audioPlayer!.seek(Duration.zero);
+      await _audioPlayer.seek(Duration.zero);
 
       setState(() {
         _isPlaying = false;
@@ -253,7 +257,7 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
 
   @override
   void dispose() {
-    _audioPlayer?.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -268,36 +272,40 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
       ).showSnackBar(const SnackBar(content: Text('Recording not available')));
       return;
     }
-
     print("--- AUDIO URL: $recording ---");
 
     try {
-      if (_audioPlayer == null) {
-        _setupAudioPlayer();
-      }
-
       if (_isPlaying) {
-        await _audioPlayer!.pause();
+        await _audioPlayer.pause();
         return;
       }
 
       setState(() => _isLoadingAudio = true);
 
       if (_currentUrl != recording) {
-        await _audioPlayer!.stop();
-        await _audioPlayer!.play(UrlSource(recording));
+        await _audioPlayer.stop();
+        if (Platform.isIOS) {
+          final tempDir = await getTemporaryDirectory();
+          final file = File('${tempDir.path}/temp_audio_${recording.hashCode}.mp3');
+          if (!await file.exists()) {
+            await Dio().download(recording, file.path);
+          }
+          await _audioPlayer.play(DeviceFileSource(file.path));
+        } else {
+          await _audioPlayer.play(UrlSource(recording, mimeType: 'audio/mpeg'));
+        }
         setState(() {
           _currentUrl = recording;
         });
       } else {
-        await _audioPlayer!.resume();
+        await _audioPlayer.resume();
       }
     } catch (e) {
       debugPrint("AUDIO ERROR: $e");
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Unable to play recording: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Unable to play recording $e")));
     } finally {
       if (mounted) {
         setState(() => _isLoadingAudio = false);
@@ -305,6 +313,8 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
     }
   }
 
+  
+  
   String _formatDuration(int totalSeconds) {
     if (totalSeconds < 0) return "00:00";
     final minutes = totalSeconds ~/ 60;
@@ -501,9 +511,8 @@ class _CallHistoryTileState extends State<_CallHistoryTile> {
                       activeColor: Colours.orangeDE8E0C,
                       inactiveColor: Colours.white.withOpacity(0.3),
                       onChanged: (value) async {
-                        if (_audioPlayer == null) return;
                         final position = Duration(milliseconds: value.toInt());
-                        await _audioPlayer!.seek(position);
+                        await _audioPlayer.seek(position);
                       },
                     ),
                   ),
