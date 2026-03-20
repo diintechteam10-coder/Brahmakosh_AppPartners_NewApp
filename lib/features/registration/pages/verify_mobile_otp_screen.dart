@@ -185,21 +185,25 @@ class VerifyMobileNoOtpScreen extends StatelessWidget {
                   16.h.verticalSpace,
 
                   /// RESEND
-                  GestureDetector(
-                    onTap: () {
-                      controller.resendMobileOtp().then((e) {
-                        if (e == true) {
-                          Get.snackbar("Otp Sent", "Otp Sent Successfully", backgroundColor: Colors.white, colorText: Colors.black);
-                        }
-                      });
-                    },
-                    child: Text(
-                      'Didn’t receive the code? Resend',
-                      style: TextStyle(
-                        fontFamily: Fonts.medium,
-                        fontSize: 14.sp,
-                        color: Colours.orangeFF9F07,
-                        decoration: TextDecoration.underline,
+                  Obx(
+                    () => GestureDetector(
+                      onTap: (controller.isLoading.value || !controller.canResendOtp)
+                          ? null
+                          : () => controller.resendMobileOtp(),
+                      child: Text(
+                        controller.canResendOtp
+                            ? 'Didn’t receive the code? Resend'
+                            : 'Resend OTP in ${controller.resendTimer.value}s',
+                        style: TextStyle(
+                          fontFamily: Fonts.medium,
+                          fontSize: 14.sp,
+                          color: (controller.isLoading.value || !controller.canResendOtp)
+                              ? Colours.grey75879A
+                              : Colours.orangeFF9F07,
+                          decoration: controller.canResendOtp
+                              ? TextDecoration.underline
+                              : TextDecoration.none,
+                        ),
                       ),
                     ),
                   ),

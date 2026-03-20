@@ -17,4 +17,7 @@ class AppPages {
   static String incomingCallScreen = '/incomingCallScreen';
   static String activeCallScreen = '/activeCallScreen';
   static String editProfile = '/editProfile';
+  static String forgotPassword = '/forgotPassword';
+  static String verifyResetOtp = '/verifyResetOtp';
+  static String resetPasswordView = '/resetPassword';
 }

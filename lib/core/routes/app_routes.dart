@@ -17,6 +17,9 @@ import 'package:brahmakoshpartners/features/registration/pages/verify_mobile_otp
 import 'package:brahmakoshpartners/features/notifications/pages/notification_screen.dart';
 import 'package:brahmakoshpartners/features/notifications/pages/notification_detail_screen.dart';
 import 'package:brahmakoshpartners/features/training/pages/training_screen.dart';
+import 'package:brahmakoshpartners/features/auth/views/forgot_password/forgot_password_screen.dart';
+import 'package:brahmakoshpartners/features/auth/views/forgot_password/reset_password_screen.dart';
+import 'package:brahmakoshpartners/features/auth/views/forgot_password/verify_reset_otp_screen.dart';
 import 'package:brahmakoshpartners/features/profile/pages/edit_profile_screen.dart';
 import 'package:get/route_manager.dart';
 
@@ -61,6 +64,13 @@ class AppRoutes {
       page: () => WaitingApprovalScreen(),
     ),
     GetPage(name: AppPages.editProfile, page: () => const EditProfileScreen()),
+
+    /// ==========================================================
+    /// Forgot Password Pages
+    /// ==========================================================
+    GetPage(name: AppPages.forgotPassword, page: () => ForgotPasswordScreen()),
+    GetPage(name: AppPages.verifyResetOtp, page: () => VerifyResetOtpScreen()),
+    GetPage(name: AppPages.resetPasswordView, page: () => ResetPasswordScreen()),
 
     /// ==========================================================
     /// Notification Pages

@@ -228,6 +228,26 @@ class VerifyEmailOtpScreen extends StatelessWidget {
                       ),
                     ),
 
+                    SizedBox(height: 16.h),
+
+                    /// RESEND OTP BUTTON
+                    Obx(
+                      () => TextButton(
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : () => controller.resendEmailOtp(),
+                        child: Text(
+                          'Resend OTP',
+                          style: TextStyle(
+                            fontFamily: Fonts.semiBold,
+                            fontSize: 14.sp,
+                            color: Colours.orangeFF9F07,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     SizedBox(height: 24.h),
 
                     Text(

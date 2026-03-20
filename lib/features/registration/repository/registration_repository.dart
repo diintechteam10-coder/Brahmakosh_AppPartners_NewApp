@@ -301,7 +301,20 @@ class RegistrationRepository extends ApiService {
       };
 
       await apiClient.dio.post(
-        "/api/mobile/partner/register/resend-mobile-otp",
+        "/api/mobile/partner/register/resend-phone-otp",
+        data: payload,
+      );
+    } on DioException catch (e) {
+      throw e.error as Exception;
+    }
+  }
+
+  resendEmailOtp({required String email}) async {
+    try {
+      final payload = {"email": email, "clientId": "CLI-KBHUMT"};
+
+      await apiClient.dio.post(
+        "/api/mobile/partner/register/resend-email-otp",
         data: payload,
       );
     } on DioException catch (e) {

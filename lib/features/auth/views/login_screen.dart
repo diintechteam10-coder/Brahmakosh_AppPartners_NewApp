@@ -92,6 +92,25 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
 
+                        8.h.verticalSpace,
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              Get.toNamed(AppPages.forgotPassword);
+                            },
+                            child: Text(
+                              'Forgot Password?',
+                              style: TextStyle(
+                                fontFamily: Fonts.medium,
+                                fontSize: 13.sp,
+                                color: Colours.orangeFF9F07,
+                              ),
+                            ),
+                          ),
+                        ),
+
                         28.h.verticalSpace,
 
                         Obx(

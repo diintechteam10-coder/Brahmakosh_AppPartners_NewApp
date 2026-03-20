@@ -558,6 +558,10 @@ class RegistrationController extends GetxController {
   RxDouble latitude = 0.0.obs;
   RxDouble longitude = 0.0.obs;
 
+  // Resend OTP Timer
+  RxInt resendTimer = 0.obs;
+  bool get canResendOtp => resendTimer.value == 0;
+
   bool get isPhoneValid => phoneController.text.trim().length == 10;
   bool get isEmailOtpValid => emailOtpController.text.trim().length == 6;
   bool get isPhoneOtpValid => phoneNoOtpController.text.trim().length == 6;
@@ -793,6 +797,27 @@ class RegistrationController extends GetxController {
     }
   }
 
+  Future<bool?> resendEmailOtp() async {
+    isLoading.value = true;
+    try {
+      await repository.resendEmailOtp(email: email!);
+      Get.snackbar("Success", "OTP resent to your email", 
+          backgroundColor: Colors.white, colorText: Colors.black);
+      return true;
+    } on NoInternetException catch (e) {
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
+      return false;
+    } on ApiException catch (e) {
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
+      return false;
+    } catch (e) {
+      Get.snackbar("Error !", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<bool?> sendOtpToMobile({required String mobileNumber}) async {
     isLoading.value = true;
     try {
@@ -861,6 +886,8 @@ class RegistrationController extends GetxController {
   }
 
   Future<bool?> resendMobileOtp() async {
+    if (!canResendOtp) return false;
+
     isLoading.value = true;
     try {
       final resolvedEmail =
@@ -876,6 +903,11 @@ class RegistrationController extends GetxController {
         email: resolvedEmail,
         whatsapp: isWhatsappSelected.value,
       );
+
+      Get.snackbar("Success", "OTP resent successfully", 
+          backgroundColor: Colors.white, colorText: Colors.black);
+      
+      _startResendTimer();
       return true;
     } on NoInternetException catch (e) {
       Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
@@ -886,6 +918,15 @@ class RegistrationController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _startResendTimer() {
+    resendTimer.value = 60;
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      resendTimer.value--;
+      return resendTimer.value > 0;
+    });
   }
 
   /// ✅ Register Partner Step3 + connect socket immediately after token save

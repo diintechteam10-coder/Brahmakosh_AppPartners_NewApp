@@ -51,4 +51,57 @@ class AuthRepository extends ApiService {
       throw Exception(msg ?? "Login failed");
     }
   }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      final payload = {"email": email};
+      await apiClient.dio.post(
+        "/api/auth/partner/forgot-password",
+        data: payload,
+      );
+    } on DioException catch (e) {
+      final msg = e.response?.data?["message"]?.toString() ?? e.message;
+      throw Exception(msg ?? "Failed to send OTP");
+    }
+  }
+
+  Future<String> verifyResetOtp(String email, String otp) async {
+    try {
+      final payload = {"email": email, "otp": otp};
+      final Response response = await apiClient.dio.post(
+        "/api/auth/partner/verify-reset-otp",
+        data: payload,
+      );
+
+      final token = response.data?['data']?['resetToken']?.toString();
+      if (token == null) {
+        throw Exception("Reset token not found in response");
+      }
+      return token;
+    } on DioException catch (e) {
+      final msg = e.response?.data?["message"]?.toString() ?? e.message;
+      throw Exception(msg ?? "OTP verification failed");
+    }
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    try {
+      final payload = {
+        "email": email,
+        "resetToken": resetToken,
+        "newPassword": newPassword,
+      };
+      await apiClient.dio.post(
+        "/api/auth/partner/reset-password",
+        data: payload,
+      );
+    } on DioException catch (e) {
+      final msg = e.response?.data?["message"]?.toString() ?? e.message;
+      throw Exception(msg ?? "Password reset failed");
+    }
+  }
 }
