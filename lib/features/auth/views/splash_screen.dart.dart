@@ -80,21 +80,21 @@ class AppLogo extends StatelessWidget {
     return Container(
       height: size,
       width: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [Colours.orangeF6B537, Colours.orangeD29F22],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colours.orangeF6B537.withOpacity(0.4),
-            blurRadius: 24.r,
-            spreadRadius: 2.r,
-          ),
-        ],
-      ),
+      // decoration: BoxDecoration(
+      //   shape: BoxShape.circle,
+      //   gradient: const LinearGradient(
+      //     colors: [Colours.orangeF6B537, Colours.orangeD29F22],
+      //     begin: Alignment.topLeft,
+      //     end: Alignment.bottomRight,
+      //   ),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colours.orangeF6B537.withOpacity(0.4),
+        //     blurRadius: 24.r,
+        //     spreadRadius: 2.r,
+        //   ),
+        // ],
+      // ),
       alignment: Alignment.center,
       child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
     );

@@ -70,22 +70,22 @@ class _SendOtpEmailScreenState extends State<SendOtpEmailScreen> {
                       Container(
                         height: 110.w,
                         width: 110.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [
-                              Colours.orangeF6B537,
-                              Colours.orangeD29F22,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colours.orangeF6B537.withOpacity(0.45),
-                              blurRadius: 40,
-                              spreadRadius: 6,
-                            ),
-                          ],
-                        ),
+                        // decoration: BoxDecoration(
+                        //   shape: BoxShape.circle,
+                        //   gradient: const LinearGradient(
+                        //     colors: [
+                        //       Colours.orangeF6B537,
+                        //       Colours.orangeD29F22,
+                        //     ],
+                        //   ),
+                        //   boxShadow: [
+                        //     BoxShadow(
+                        //       color: Colours.orangeF6B537.withOpacity(0.45),
+                        //       blurRadius: 40,
+                        //       spreadRadius: 6,
+                        //     ),
+                        //   ],
+                        // ),
                         alignment: Alignment.center,
                         child: Image.asset(
                           "assets/images/logo-removebg.png",

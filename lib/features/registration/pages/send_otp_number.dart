@@ -54,10 +54,10 @@ class SendOtpMobileNumber extends StatelessWidget {
                   Container(
                     height: 140.w,
                     width: 140.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colours.orangeFF9F07.withOpacity(0.2),
-                    ),
+                    // decoration: BoxDecoration(
+                    //   shape: BoxShape.circle,
+                    //   color: Colours.orangeFF9F07.withOpacity(0.2),
+                    // ),
                     alignment: Alignment.center,
                       child:Image.asset("assets/images/logo-removebg.png",fit: BoxFit.cover,)
                   ),

@@ -65,19 +65,19 @@ class VerifyEmailOtpScreen extends StatelessWidget {
                     Container(
                       height: 120.w,
                       width: 120.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Colours.orangeF6B537, Colours.orangeD29F22],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colours.orangeF6B537.withOpacity(0.4),
-                            blurRadius: 40,
-                            spreadRadius: 6,
-                          ),
-                        ],
-                      ),
+                      // decoration: BoxDecoration(
+                      //   shape: BoxShape.circle,
+                      //   gradient: const LinearGradient(
+                      //     colors: [Colours.orangeF6B537, Colours.orangeD29F22],
+                      //   ),
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //     color: Colours.orangeF6B537.withOpacity(0.4),
+                        //     blurRadius: 40,
+                        //     spreadRadius: 6,
+                        //   ),
+                        // ],
+                      // ),
                       alignment: Alignment.center,
                       child: Image.asset(
                         "assets/images/logo-removebg.png",

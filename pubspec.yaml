@@ -85,7 +85,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/new_logo.png"
   remove_alpha_ios: true
 
 # The following section is specific to Flutter packages.

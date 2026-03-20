@@ -107,12 +107,12 @@ class _AppLogo extends StatelessWidget {
     return Container(
       height: 110.w,
       width: 110.w,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [Colours.orangeF6B537, Colours.orangeD29F22],
-        ),
-      ),
+      // decoration: const BoxDecoration(
+      //   shape: BoxShape.circle,
+      //   gradient: LinearGradient(
+      //     colors: [Colours.orangeF6B537, Colours.orangeD29F22],
+      //   ),
+      // ),
       alignment: Alignment.center,
       child: Image.asset("assets/images/logo-removebg.png", fit: BoxFit.cover),
     );
