@@ -250,6 +250,30 @@ class VerifyEmailOtpScreen extends StatelessWidget {
 
                     SizedBox(height: 24.h),
 
+                    /// RESEND
+                    GestureDetector(
+                      onTap: () {
+                        controller.resendEmailOtp().then((e) {
+                          if (e == true) {
+                            Get.snackbar("Otp Sent", "Otp Sent Successfully",
+                                backgroundColor: Colors.white,
+                                colorText: Colors.black);
+                          }
+                        });
+                      },
+                      child: Text(
+                        'Didn’t receive the code? Resend',
+                        style: TextStyle(
+                          fontFamily: Fonts.medium,
+                          fontSize: 14.sp,
+                          color: Colours.orangeFF9F07,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 24.h),
+
                     Text(
                       'By continuing, you agree to our Terms & Privacy Policy',
                       textAlign: TextAlign.center,

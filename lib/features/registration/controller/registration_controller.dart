@@ -885,6 +885,33 @@ class RegistrationController extends GetxController {
     }
   }
 
+  Future<bool?> resendEmailOtp() async {
+    isLoading.value = true;
+    try {
+      final resolvedEmail =
+          email ??
+          CurrentUser().userDetails['email'] ??
+          CurrentUser().userDetails['user']?['email'];
+      if (resolvedEmail == null) {
+        Get.snackbar("Error", "Email not found. Please register again.", backgroundColor: Colors.white, colorText: Colors.black);
+        return false;
+      }
+
+      await repository.resendEmailOtp(
+        email: resolvedEmail,
+      );
+      return true;
+    } on NoInternetException catch (e) {
+      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
+      return false;
+    } on ApiException catch (e) {
+      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<bool?> resendMobileOtp() async {
     if (!canResendOtp) return false;
 

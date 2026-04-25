@@ -292,11 +292,27 @@ class RegistrationRepository extends ApiService {
     }
   }
 
-  resendMobileOtp({required email, bool whatsapp = false}) async {
+  resendEmailOtp({required String email}) async {
     try {
       final payload = {
         "email": email,
-        "otpMethod": whatsapp ? "whatsapp" : "twilio",
+        "clientId": "CLI-KBHUMT",
+      };
+
+      await apiClient.dio.post(
+        "/api/mobile/partner/register/resend-email-otp",
+        data: payload,
+      );
+    } on DioException catch (e) {
+      throw e.error as Exception;
+    }
+  }
+
+  resendMobileOtp({required String email, bool whatsapp = false}) async {
+    try {
+      final payload = {
+        "email": email,
+        "otpMethod": "twilio", // User specified "twilio" in body reference
         "clientId": "CLI-KBHUMT",
       };
 
