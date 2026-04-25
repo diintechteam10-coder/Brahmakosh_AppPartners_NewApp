@@ -111,14 +111,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Start processing queue if already online
     if (_profileCtrl.status.value == 'online') {
-      _startPolling();
-      _checkAndShowNextRequest();
+      _changeStatus(HomeStatus.onlineSearching, updateServer: false);
     }
 
     ever(_profileCtrl.status, (String s) {
       if (s == 'online' && _status == HomeStatus.offline) {
         debugPrint("🤖 Auto-Online triggered by server status");
-        _changeStatus(HomeStatus.onlineSearching);
+        _changeStatus(HomeStatus.onlineSearching, updateServer: false);
+      } else if (s == 'offline' && _status == HomeStatus.onlineSearching) {
+        debugPrint("🤖 Auto-Offline triggered by server status");
+        _changeStatus(HomeStatus.offline, updateServer: false);
       }
     });
   }
@@ -200,20 +202,32 @@ class _HomeScreenState extends State<HomeScreen> {
     return null;
   }
 
-  Future<void> _changeStatus(HomeStatus status) async {
+  Future<void> _changeStatus(
+    HomeStatus status, {
+    bool updateServer = true,
+  }) async {
     final mapped = status == HomeStatus.onlineSearching ? "online" : "offline";
 
     if (_statusCtrl.isLoading.value) return;
 
     try {
-      await _statusCtrl.updateStatus(mapped);
+      if (updateServer) {
+        await _statusCtrl.updateStatus(mapped);
 
-      if (_statusCtrl.error.value.isNotEmpty) {
-        Get.snackbar("Error", _statusCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
-        return;
+        if (_statusCtrl.error.value.isNotEmpty) {
+          Get.snackbar(
+            "Error",
+            _statusCtrl.error.value,
+            backgroundColor: Colors.white,
+            colorText: Colors.black,
+          );
+          return;
+        }
       }
 
-      setState(() => _status = status);
+      if (mounted) {
+        setState(() => _status = status);
+      }
       widget.onStatusChange?.call(status);
 
       if (status == HomeStatus.onlineSearching) {
@@ -221,7 +235,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final token = await Tokens.token;
         if (token == null || token.trim().isEmpty) {
-          Get.snackbar("Error", "Token missing. Please login again.", backgroundColor: Colors.white, colorText: Colors.black);
+          Get.snackbar(
+            "Error",
+            "Token missing. Please login again.",
+            backgroundColor: Colors.white,
+            colorText: Colors.black,
+          );
           return;
         }
 
@@ -237,7 +256,12 @@ class _HomeScreenState extends State<HomeScreen> {
         _reqCtrl.clear();
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
     }
   }
 
@@ -260,7 +284,12 @@ class _HomeScreenState extends State<HomeScreen> {
             onReject: (reason) async {
               final requestId = _extractConversationId(data);
               if (requestId == null || requestId.isEmpty) {
-                Get.snackbar("Error", "requestId missing", backgroundColor: Colors.white, colorText: Colors.black);
+                Get.snackbar(
+                  "Error",
+                  "requestId missing",
+                  backgroundColor: Colors.white,
+                  colorText: Colors.black,
+                );
                 if (mounted) Navigator.pop(context);
                 return;
               }
@@ -273,7 +302,12 @@ class _HomeScreenState extends State<HomeScreen> {
               );
 
               if (_rejectCtrl.error.value.isNotEmpty) {
-                Get.snackbar("Reject Failed", _rejectCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
+                Get.snackbar(
+                  "Reject Failed",
+                  _rejectCtrl.error.value,
+                  backgroundColor: Colors.white,
+                  colorText: Colors.black,
+                );
               }
 
               if (mounted) Navigator.pop(context);
@@ -282,7 +316,12 @@ class _HomeScreenState extends State<HomeScreen> {
             onAccept: () async {
               final requestId = _extractConversationId(data);
               if (requestId == null || requestId.isEmpty) {
-                Get.snackbar("Error", "requestId missing", backgroundColor: Colors.white, colorText: Colors.black);
+                Get.snackbar(
+                  "Error",
+                  "requestId missing",
+                  backgroundColor: Colors.white,
+                  colorText: Colors.black,
+                );
                 if (mounted) Navigator.pop(context);
                 return;
               }
@@ -295,7 +334,12 @@ class _HomeScreenState extends State<HomeScreen> {
               );
 
               if (_acceptCtrl.error.value.isNotEmpty) {
-                Get.snackbar("Accept Failed", _acceptCtrl.error.value, backgroundColor: Colors.white, colorText: Colors.black);
+                Get.snackbar(
+                  "Accept Failed",
+                  _acceptCtrl.error.value,
+                  backgroundColor: Colors.white,
+                  colorText: Colors.black,
+                );
                 if (mounted) Navigator.pop(context);
                 return;
               }
@@ -380,7 +424,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Obx(() {
                             final name =
-                                _profileCtrl.partner.value?.name ?? "Loading...";
+                                _profileCtrl.partner.value?.name ??
+                                "Loading...";
                             final loading = _statusCtrl.isLoading.value;
                             return _Header(
                               status: _status,
@@ -802,8 +847,7 @@ class _PendingRequestsList extends StatelessWidget {
                 ? (item['userId'] as Map).cast<String, dynamic>()
                 : <String, dynamic>{};
             if (userObj['profile'] is Map) {
-              name =
-                  (userObj['profile'] as Map)['name']?.toString() ?? 'User';
+              name = (userObj['profile'] as Map)['name']?.toString() ?? 'User';
             } else {
               name = userObj['name']?.toString() ?? 'User';
             }

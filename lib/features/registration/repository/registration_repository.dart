@@ -195,6 +195,7 @@ import 'package:brahmakoshpartners/core/network/api_service.dart';
 import 'package:brahmakoshpartners/core/const/app_urls.dart';
 import 'package:brahmakoshpartners/core/services/current_user.dart';
 import 'package:brahmakoshpartners/core/services/tokens.dart';
+import 'package:brahmakoshpartners/core/errors/exception.dart';
 import 'package:dio/dio.dart';
 
 class RegistrationRepository extends ApiService {
@@ -325,18 +326,6 @@ class RegistrationRepository extends ApiService {
     }
   }
 
-  resendEmailOtp({required String email}) async {
-    try {
-      final payload = {"email": email, "clientId": "CLI-KBHUMT"};
-
-      await apiClient.dio.post(
-        "/api/mobile/partner/register/resend-email-otp",
-        data: payload,
-      );
-    } on DioException catch (e) {
-      throw e.error as Exception;
-    }
-  }
 
   // ======================= UPDATED submitRequest (NEW PAYLOAD) =======================
   submitRequest({
@@ -375,14 +364,16 @@ class RegistrationRepository extends ApiService {
         },
       };
 
+      print("📡 [submitRequest] Payload: $payload");
+
       final Response response = await apiClient.dio.post(
         AppUrls.submitProfile,
         data: payload,
       );
 
-      // Some endpoints return user details inside 'user', while others return it directly in 'data'
+      // Some endpoints return user details inside 'partner', 'user', or directly in 'data'
       final userResponse = response.data['data'];
-      final userData = userResponse['user'] ?? userResponse;
+      final userData = userResponse['partner'] ?? userResponse['user'] ?? userResponse;
 
       await CurrentUser().save(userData);
 
@@ -393,7 +384,20 @@ class RegistrationRepository extends ApiService {
         Tokens.save(token);
       }
     } on DioException catch (e) {
-      throw e.error as Exception;
+      print("❌ [submitRequest] DioError: ${e.message}");
+      print("❌ [submitRequest] Response status: ${e.response?.statusCode}");
+      print("❌ [submitRequest] Response data: ${e.response?.data}");
+      
+      if (e.response != null && e.response?.data is Map && e.response?.data['message'] != null) {
+        throw ApiException(message: e.response?.data['message']);
+      }
+      if (e.error is Exception) {
+        throw e.error as Exception;
+      }
+      throw Exception(e.message);
+    } catch (e) {
+      print("❌ [submitRequest] Unexpected error: $e");
+      rethrow;
     }
   }
 

@@ -5,6 +5,8 @@ import 'package:brahmakoshpartners/features/conversations/controller/conversatio
 import 'package:brahmakoshpartners/features/conversations/controller/get_unread_count_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:async';
+import 'package:brahmakoshpartners/core/services/tab_event_bus.dart';
 import 'package:get/get.dart';
 
 class ConversationScreen extends StatefulWidget {
@@ -24,10 +26,23 @@ class _ConversationScreenState extends State<ConversationScreen> {
   // VISUAL LABELS based on mockup. Logical backend mapping remains tied to index implicitly.
   final tabs = const ['All', 'Active', 'Unread', 'Completed'];
 
+  StreamSubscription? _tabSub;
+
   @override
   void initState() {
     super.initState();
     _fetchAll();
+    _tabSub = TabEventBus.tabStream.stream.listen((index) {
+      if (index == 1 && mounted) {
+        _fetchAll();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchAll() async {

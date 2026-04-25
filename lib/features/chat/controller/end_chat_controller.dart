@@ -123,6 +123,7 @@
 
 import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/services/socket/socket_events.dart';
@@ -170,17 +171,39 @@ class EndChatController extends GetxController {
     this.onEnded = onEnded;
     this.onError = onError;
 
+    // ✅ Reset state for new init
+    isConversationEnded.value = false;
+    endStatus.value = '';
+    isEndedByMe = false;
+
     _initSocketListeners();
   }
 
   void _initSocketListeners() {
     _endedHandler = (data) {
+      debugPrint("🏁 [END_CHAT_CTRL] CONVERSATION ENDED EVENT: $data");
+      if (data is Map) {
+        final incomingId = data['conversationId']?.toString();
+        if (incomingId != null && incomingId != conversationId) {
+          debugPrint("⏭️ Ignoring end event for different conversation: $incomingId");
+          return;
+        }
+      }
       endStatus.value = 'ended';
+      isConversationEnded.value = true; // Force immediate update
       onEnded?.call();
     };
+    socketService.off(SocketEvents.conversationEnded, _endedHandler);
+    socketService.off(SocketEvents.conversationLeft, _endedHandler);
     socketService.on(SocketEvents.conversationEnded, _endedHandler!);
+    socketService.on(SocketEvents.conversationLeft, _endedHandler!);
 
     _failedHandler = (data) {
+      debugPrint("❌ [END_CHAT_CTRL] CONVERSATION END FAILED: $data");
+      if (data is Map) {
+        final incomingId = data['conversationId']?.toString();
+        if (incomingId != null && incomingId != conversationId) return;
+      }
       endStatus.value = 'failed';
       final msg = (data is Map && data['message'] != null)
           ? data['message'].toString()
@@ -188,6 +211,14 @@ class EndChatController extends GetxController {
       onError?.call(msg);
     };
     socketService.on(SocketEvents.conversationEndFailed, _failedHandler!);
+  }
+
+  /// ✅ Trigger end state manually (e.g. from polling)
+  void triggerManualEnd() {
+    debugPrint("🏁 [END_CHAT_CTRL] Manually triggering end state");
+    endStatus.value = 'ended';
+    isConversationEnded.value = true;
+    onEnded?.call();
   }
 
   Future<ConversationEndResponse?> endChatHybrid({

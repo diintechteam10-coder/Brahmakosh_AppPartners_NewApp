@@ -8,6 +8,8 @@ import '../bloc/earning_bloc.dart';
 import '../models/earning_model.dart';
 import '../repository/earning_repository.dart';
 import 'withdraw_screen.dart';
+import 'dart:async';
+import 'package:brahmakoshpartners/core/services/tab_event_bus.dart';
 
 class EarningScreen extends StatelessWidget {
   const EarningScreen({super.key});
@@ -33,15 +35,26 @@ class _EarningView extends StatefulWidget {
 class _EarningViewState extends State<_EarningView> {
   final ScrollController _scrollController = ScrollController();
   bool _showAllTransactions = false;
+  StreamSubscription? _tabSub;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _tabSub = TabEventBus.tabStream.stream.listen((index) {
+      if (index == 3 && mounted) {
+        final bloc = context.read<EarningBloc>();
+        bloc.add(FetchEarningsEvent(
+          startDate: bloc.state.startDate, 
+          endDate: bloc.state.endDate
+        ));
+      }
+    });
   }
 
   @override
   void dispose() {
+    _tabSub?.cancel();
     _scrollController.dispose();
     super.dispose();
   }

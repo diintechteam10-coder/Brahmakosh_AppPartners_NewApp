@@ -21,6 +21,7 @@ import 'package:brahmakoshpartners/features/auth/views/forgot_password/forgot_pa
 import 'package:brahmakoshpartners/features/auth/views/forgot_password/reset_password_screen.dart';
 import 'package:brahmakoshpartners/features/auth/views/forgot_password/verify_reset_otp_screen.dart';
 import 'package:brahmakoshpartners/features/profile/pages/edit_profile_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 
 class AppRoutes {
@@ -91,6 +92,10 @@ class AppRoutes {
       name: AppPages.incomingCallScreen,
       page: () {
         final incomingCall = Get.arguments;
+        if (incomingCall == null) {
+          // Fallback if arguments are lost (e.g. during hot reload)
+          return const Scaffold(body: Center(child: Text('Invalid call session')));
+        }
         return IncomingCallScreen(incomingCall: incomingCall);
       },
       transition: Transition.fadeIn,

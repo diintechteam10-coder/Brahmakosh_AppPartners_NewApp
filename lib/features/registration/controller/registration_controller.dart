@@ -797,26 +797,6 @@ class RegistrationController extends GetxController {
     }
   }
 
-  Future<bool?> resendEmailOtp() async {
-    isLoading.value = true;
-    try {
-      await repository.resendEmailOtp(email: email!);
-      Get.snackbar("Success", "OTP resent to your email", 
-          backgroundColor: Colors.white, colorText: Colors.black);
-      return true;
-    } on NoInternetException catch (e) {
-      Get.snackbar("No Connection", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
-      return false;
-    } on ApiException catch (e) {
-      Get.snackbar("Error !", e.message, backgroundColor: Colors.white, colorText: Colors.black);
-      return false;
-    } catch (e) {
-      Get.snackbar("Error !", e.toString(), backgroundColor: Colors.white, colorText: Colors.black);
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
-  }
 
   Future<bool?> sendOtpToMobile({required String mobileNumber}) async {
     isLoading.value = true;
@@ -1015,8 +995,7 @@ class RegistrationController extends GetxController {
       return false;
     } on ApiException catch (e) {
       Get.snackbar("Error !", 
-      "Something went wrong, please try again later,we are resolving",
-      // e.message
+      e.message,
      backgroundColor: Colors.white, colorText: Colors.black);
       return false;
     } catch (e) {

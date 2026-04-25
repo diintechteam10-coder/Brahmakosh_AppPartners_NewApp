@@ -14,6 +14,8 @@ import 'package:brahmakoshpartners/core/const/fonts.dart';
 import '../bloc/call_bloc.dart';
 import '../models/call_history_response.dart';
 import '../repository/call_repository.dart';
+import 'dart:async';
+import 'package:brahmakoshpartners/core/services/tab_event_bus.dart';
 
 class CallLogsScreen extends StatelessWidget {
   const CallLogsScreen({super.key});
@@ -75,8 +77,31 @@ class CallLogsScreen extends StatelessWidget {
   }
 }
 
-class _CallView extends StatelessWidget {
+class _CallView extends StatefulWidget {
   const _CallView();
+
+  @override
+  State<_CallView> createState() => _CallViewState();
+}
+
+class _CallViewState extends State<_CallView> {
+  StreamSubscription? _tabSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabSub = TabEventBus.tabStream.stream.listen((index) {
+      if (index == 2 && mounted) {
+        context.read<CallBloc>().add(const FetchCallHistoryEvent());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

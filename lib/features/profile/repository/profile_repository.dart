@@ -104,6 +104,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:brahmakoshpartners/core/network/api_service.dart';
+import 'package:brahmakoshpartners/core/services/current_user.dart';
 import '../models/profile_model.dart';
 
 class PartnerProfileRepository extends ApiService {
@@ -115,6 +116,11 @@ class PartnerProfileRepository extends ApiService {
           await apiClient.dio.get("/api/mobile/partner/profile");
 
       if (response.data is Map<String, dynamic>) {
+        final data = response.data['data'];
+        if (data != null) {
+          final userData = data['partner'] ?? data['user'] ?? data;
+          await CurrentUser().save(userData);
+        }
         return PartnerProfileResponse.fromJson(response.data);
       }
 
@@ -142,6 +148,11 @@ class PartnerProfileRepository extends ApiService {
       );
 
       if (response.data is Map<String, dynamic>) {
+        final resData = response.data['data'];
+        if (resData != null) {
+          final userData = resData['partner'] ?? resData['user'] ?? resData;
+          await CurrentUser().save(userData);
+        }
         return PartnerProfileResponse.fromJson(response.data);
       }
 

@@ -484,20 +484,28 @@ import '../controller/end_chat_controller.dart';
 
 class ReviewBottomSheet extends StatefulWidget {
   final String conversationId;
-  const ReviewBottomSheet({super.key, required this.conversationId});
+  final String? tag; // ✅ Add tag
+  const ReviewBottomSheet({super.key, required this.conversationId, this.tag});
 
   @override
   State<ReviewBottomSheet> createState() => _ReviewBottomSheetState();
 }
 
 class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
-  final EndChatController endCtrl = Get.find<EndChatController>();
+  late final EndChatController endCtrl; // ✅ Use late
 
   final TextEditingController _commentController = TextEditingController();
 
   final RxInt rating = 5.obs;
   final RxString satisfaction = 'neutral'.obs;
   final RxString error = ''.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Find controller with tag
+    endCtrl = Get.find<EndChatController>(tag: widget.tag);
+  }
 
   @override
   void dispose() {

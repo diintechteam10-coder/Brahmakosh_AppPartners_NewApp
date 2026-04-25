@@ -22,6 +22,7 @@ class SocketEvents {
 
   // ===== End Conversation =====
   static const endConversation = "conversation:end";
+  static const conversationLeft = "conversation:left";
   static const conversationEnded = "conversation:ended";
   static const conversationEndFailed = "conversation:end:failed";
 

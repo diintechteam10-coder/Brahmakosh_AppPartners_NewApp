@@ -47,6 +47,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/services/socket/webrtc_service.dart';
+import '../../../../core/services/local_notification_service.dart';
 import '../../../../core/routes/app_pages.dart';
 
 class GlobalCallListener extends StatefulWidget {
@@ -79,11 +80,16 @@ class _GlobalCallListenerState extends State<GlobalCallListener> {
 
         case CallState.connecting:
         case CallState.inCall:
+          // ✅ Dismiss call notification when answered
+          LocalNotificationService.I.dismissCallNotification();
+          break;
+
         case CallState.ending:
         case CallState.ended:
         case CallState.failed:
         case CallState.idle:
-          // No global navigation needed for these states
+          // ✅ Dismiss call notification when ended/rejected
+          LocalNotificationService.I.dismissCallNotification();
           break;
       }
     });
@@ -91,9 +97,34 @@ class _GlobalCallListenerState extends State<GlobalCallListener> {
 
   void _navigateToIncomingCall() {
     final incoming = WebRtcService.I.incomingCall;
-    // Conversation ID exists when call is incoming
 
     if (incoming != null) {
+      // ✅ Show system notification for the incoming call
+      String callerName = 'User';
+      String callerEmail = '';
+      if (incoming.from != null) {
+        // Prefer profile name over root name since root name is sometimes the email
+        callerName =
+            incoming.from!['profile']?['name']?.toString() ??
+            incoming.from!['name']?.toString() ??
+            'User';
+
+        if (callerName.contains('@')) {
+          callerName = callerName.split('@')[0];
+        }
+
+        callerEmail =
+            incoming.from!['profile']?['email']?.toString() ??
+            incoming.from!['email']?.toString() ??
+            '';
+      }
+
+      LocalNotificationService.I.showCallNotification(
+        conversationId: incoming.conversationId,
+        callerName: callerName,
+        callerEmail: callerEmail,
+      );
+
       Get.toNamed(AppPages.incomingCallScreen, arguments: incoming);
     }
   }

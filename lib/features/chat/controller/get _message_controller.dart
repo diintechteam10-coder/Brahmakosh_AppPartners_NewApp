@@ -465,6 +465,8 @@
 // }
 
 // ================= get_message_controller.dart =================
+import 'dart:async';
+import 'package:brahmakoshpartners/features/chat/controller/end_chat_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
@@ -491,6 +493,43 @@ class GetMessageController extends GetxController {
   Function(dynamic)? _typingHandler;
   Function(dynamic)? _deliveredHandler;
   Function(dynamic)? _readHandler;
+  Function(dynamic)? _endedHandler;
+
+  Timer? _statusPollingTimer;
+
+  void _startActiveStatusPolling() {
+    _stopActiveStatusPolling();
+    _statusPollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      if (conversationId.isEmpty || conversationStatus.value == 'ended') {
+        _stopActiveStatusPolling();
+        return;
+      }
+      try {
+        final res = await repository.getMessages(conversationId: conversationId);
+        if (res.data != null && res.data?.conversationStatus == 'ended') {
+          debugPrint("⏰ [GET_MSG_CTRL] Polling detected ended status");
+          conversationStatus.value = 'ended';
+          
+          // ✅ Notify EndChatController to update UI/show sheet
+          try {
+            final endCtrl = Get.find<EndChatController>(tag: conversationId);
+            endCtrl.triggerManualEnd();
+          } catch (e) {
+            debugPrint("⚠️ [GET_MSG_CTRL] Could not find EndChatController: $e");
+          }
+
+          _stopActiveStatusPolling();
+        }
+      } catch (e) {
+        debugPrint("⏰ [GET_MSG_CTRL] Polling error: $e");
+      }
+    });
+  }
+
+  void _stopActiveStatusPolling() {
+    _statusPollingTimer?.cancel();
+    _statusPollingTimer = null;
+  }
 
   Future<void> initChat({required String conversationId}) async {
     this.conversationId = conversationId;
@@ -531,6 +570,9 @@ class GetMessageController extends GetxController {
 
     // ✅ MARK READ
     markRead();
+
+    // ✅ START POLLING FALLBACK
+    _startActiveStatusPolling();
   }
 
   Future<void> refreshMessages() async {
@@ -634,6 +676,25 @@ class GetMessageController extends GetxController {
       _updateMessageStatus(data, 'read');
     };
     socketService.on(SocketEvents.readReceipt, _readHandler!);
+
+    // ------------- CONVERSATION ENDED -------------
+    socketService.off(SocketEvents.conversationEnded, _endedHandler);
+    socketService.off(SocketEvents.conversationLeft, _endedHandler);
+    _endedHandler = (data) {
+      debugPrint("🏁 [GET_MSG_CTRL] CONVERSATION ENDED EVENT: $data");
+      if (data is Map) {
+        final incomingId = data['conversationId']?.toString();
+        if (incomingId != null && incomingId != conversationId) {
+          debugPrint("⏭️ [GET_MSG_CTRL] Ignoring end event for different conversation: $incomingId");
+          return;
+        }
+      }
+      conversationStatus.value = 'ended';
+      _stopActiveStatusPolling();
+      debugPrint("✅ [GET_MSG_CTRL] Conversation status updated to 'ended' and polling stopped");
+    };
+    socketService.on(SocketEvents.conversationEnded, _endedHandler!);
+    socketService.on(SocketEvents.conversationLeft, _endedHandler!);
   }
 
   /// ✅ Robust Merge: Combine two message versions (one might be more complete than other)
@@ -802,6 +863,9 @@ class GetMessageController extends GetxController {
       socketService.off(SocketEvents.typingStatus, _typingHandler);
       socketService.off(SocketEvents.messageDelivered, _deliveredHandler);
       socketService.off(SocketEvents.readReceipt, _readHandler);
+      socketService.off(SocketEvents.conversationEnded, _endedHandler);
+
+      _stopActiveStatusPolling();
 
       conversationId = '';
     }

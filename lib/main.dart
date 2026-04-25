@@ -14,7 +14,10 @@ import 'package:brahmakoshpartners/features/chat/listeners/global_notification_l
 import 'package:brahmakoshpartners/core/connectivity/bloc/connectivity_bloc.dart';
 import 'package:brahmakoshpartners/core/connectivity/service/connectivity_service.dart';
 import 'package:brahmakoshpartners/core/connectivity/widget/connectivity_overlay.dart';
+import 'package:brahmakoshpartners/core/services/local_notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:brahmakoshpartners/core/services/app_update_service.dart';
+import 'package:upgrader/upgrader.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +29,12 @@ Future<void> main() async {
   await Hive.openBox('currentUser');
 
   await AppInitializer.init();
+
+  // ✅ Initialize local notifications
+  await LocalNotificationService.I.init();
+
+  // ✅ Initialize App Update Service
+  AppUpdateService.instance.initialize();
 
   runApp(
     RepositoryProvider(
@@ -50,7 +59,15 @@ class BrahmakoshPartners extends StatelessWidget {
           child: GetMaterialApp(
             builder: (context, child) {
               return ConnectivityOverlay(
-                child: GlobalNotificationListener(child: child!),
+                child: UpgradeAlert(
+                  upgrader: AppUpdateService.instance.upgrader,
+                  showIgnore: false,
+                  showLater: false,
+                  barrierDismissible: false,
+                  shouldPopScope: () => false,
+                  dialogStyle: UpgradeDialogStyle.material,
+                  child: GlobalNotificationListener(child: child!),
+                ),
               );
             },
             initialBinding: GlobalBindings(),

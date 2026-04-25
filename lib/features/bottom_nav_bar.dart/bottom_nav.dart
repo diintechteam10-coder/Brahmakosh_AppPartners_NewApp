@@ -9,6 +9,7 @@ import 'package:brahmakoshpartners/features/conversations/views/conversation_lis
 import 'package:brahmakoshpartners/features/earning/pages/earning_screen.dart';
 import 'package:brahmakoshpartners/features/home/pages/home_screen.dart';
 import 'package:brahmakoshpartners/features/profile/pages/profile_screen.dart';
+import 'package:brahmakoshpartners/core/services/tab_event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -124,7 +125,10 @@ class _HomeState extends State<Home> {
               onTap: _isDialogOpen
                   ? (_) {} // block taps
                   : (index) {
-                      setState(() => _currentIndex = index);
+                      if (_currentIndex != index) {
+                        setState(() => _currentIndex = index);
+                        TabEventBus.tabStream.add(index);
+                      }
                     },
             ),
 

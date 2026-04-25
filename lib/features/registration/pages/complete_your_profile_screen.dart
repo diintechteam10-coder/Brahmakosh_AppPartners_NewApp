@@ -397,8 +397,8 @@ class CompleteProfileScreen extends StatelessWidget {
                               child: Text("Palmistry"),
                             ),
                             DropdownMenuItem(
-                              value: "Healing",
-                              child: Text("Healing"),
+                              value: "Healer",
+                              child: Text("Healer"),
                             ),
                           ],
                           onChanged: (value) {

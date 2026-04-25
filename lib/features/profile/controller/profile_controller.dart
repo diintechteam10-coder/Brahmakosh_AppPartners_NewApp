@@ -78,9 +78,6 @@
 //   }
 // }
 
-
-
-
 import 'package:get/get.dart';
 import '../models/profile_model.dart';
 import '../repository/profile_repository.dart';
@@ -93,8 +90,7 @@ class PartnerProfileController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
 
-  final Rxn<PartnerProfileResponse> response =
-      Rxn<PartnerProfileResponse>();
+  final Rxn<PartnerProfileResponse> response = Rxn<PartnerProfileResponse>();
 
   final Rxn<Partner> partner = Rxn<Partner>();
   final RxString token = ''.obs;
@@ -123,8 +119,10 @@ class PartnerProfileController extends GetxController {
         token.value = res.data.token;
 
         // Stats from profile API
-        totalEarnings.value =
-            res.data.partner.stats.totalEarnings.toDouble();
+        totalEarnings.value = res.data.partner.stats.totalEarnings.toDouble();
+
+        // Ensure UI immediately knows if we should be online based on DB
+        status.value = res.data.partner.onlineStatus;
       } else {
         error.value = res.message;
       }
@@ -149,12 +147,10 @@ class PartnerProfileController extends GetxController {
             (creditRes['data']['totalClients'] as num?)?.toInt() ?? 0;
       }
 
-      final statusRes = await partnerRepository.getPartnerStatus();
-
-      if (statusRes is Map && statusRes['data'] != null) {
-        status.value =
-            statusRes['data']['status']?.toString() ?? 'offline';
-      }
+      // We no longer fetch status from getPartnerStatus() here,
+      // as it might return "offline" before the WebSocket fully connects,
+      // causing the UI to flip back to offline. We rely on the DB status
+      // returned in getProfile().
     } catch (e) {
       print("Error fetching partner details: $e");
     }

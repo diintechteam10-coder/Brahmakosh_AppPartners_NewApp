@@ -41,6 +41,8 @@ class ApiClient {
           handler.reject(
             DioException(
               requestOptions: error.requestOptions,
+              response: error.response,
+              type: error.type,
               error: exception,
             ),
           );
@@ -69,9 +71,9 @@ class ApiClient {
       ),
       PrettyDioLogger(
         requestHeader: true,
-        requestBody: false,
-        responseBody: false,
-        responseHeader: false,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: true,
         error: true,
         compact: true,
         maxWidth: 90,

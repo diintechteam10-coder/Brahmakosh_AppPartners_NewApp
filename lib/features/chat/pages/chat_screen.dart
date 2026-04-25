@@ -29,7 +29,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late final GetMessageController chatController;
 
   final SendMessageController sendCtrl = Get.put(SendMessageController());
-  final EndChatController endCtrl = Get.put(EndChatController());
+  late final EndChatController endCtrl;
   final MarkAsReadController markReadCtrl = Get.put(MarkAsReadController());
 
   final TextEditingController _textController = TextEditingController();
@@ -43,6 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Timer? _chatTimer;
   final RxString _chatDuration = "00:00".obs;
   DateTime? _argAcceptedAt;
+  String? _argUserName; // Stores name from local notification
   late final ConversationAstrologyController astroCtrl;
 
   @override
@@ -69,6 +70,11 @@ class _ChatScreenState extends State<ChatScreen> {
       _argAcceptedAt = DateTime.tryParse(args['acceptedAt'].toString());
     }
 
+    // Capture user name passed from local notification
+    if (args['userName'] != null) {
+      _argUserName = args['userName'].toString();
+    }
+
     // Handle object conversation
     if (args['acceptedConversation'] is ConversationData) {
       _acceptedData = args['acceptedConversation'];
@@ -87,6 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
       astroCtrl.fetchAstrology(conversationId: _conversationId);
     }
 
+    endCtrl = Get.put(EndChatController(), tag: _conversationId);
     chatController = Get.put(GetMessageController(), tag: _conversationId);
     _setupChatTimer();
 
@@ -126,9 +133,18 @@ class _ChatScreenState extends State<ChatScreen> {
           // ✅ Prevent opening sheet again if user is manually ending it
           if (endCtrl.isEnding.value || endCtrl.isEndedByMe) return;
 
-          Get.snackbar("Chat", "Conversation ended", backgroundColor: Colors.white, colorText: Colors.black);
+          Get.snackbar(
+            "Chat",
+            "Conversation ended",
+            backgroundColor: Colors.white,
+            colorText: Colors.black,
+          );
+          debugPrint("📝 Showing ReviewBottomSheet for $_conversationId");
           Get.bottomSheet(
-            ReviewBottomSheet(conversationId: _conversationId),
+            ReviewBottomSheet(
+              conversationId: _conversationId,
+              tag: _conversationId, // ✅ Pass the tag
+            ),
             isDismissible: false,
             enableDrag: false,
             isScrollControlled: true,
@@ -136,7 +152,12 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         },
         onError: (msg) {
-          Get.snackbar("Error", msg, backgroundColor: Colors.white, colorText: Colors.black);
+          Get.snackbar(
+            "Error",
+            msg,
+            backgroundColor: Colors.white,
+            colorText: Colors.black,
+          );
         },
       );
     }
@@ -356,28 +377,32 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     // 2. Try from Map
-    if (_conversation == null) return 'User';
-
-    final userId = _conversation!['userId'];
-    if (userId is Map) {
-      final m = userId.cast<String, dynamic>();
-      final profile = m['profile'];
-      if (profile is Map) {
-        final n = _safeStr((profile as Map)['name']);
-        if (n.isNotEmpty) return n;
+    if (_conversation != null) {
+      final userId = _conversation!['userId'];
+      if (userId is Map) {
+        final m = userId.cast<String, dynamic>();
+        final profile = m['profile'];
+        if (profile is Map) {
+          final n = _safeStr((profile as Map)['name']);
+          if (n.isNotEmpty) return n;
+        }
+        final n2 = _safeStr(m['name']);
+        if (n2.isNotEmpty) return n2;
       }
-      final n2 = _safeStr(m['name']);
-      if (n2.isNotEmpty) return n2;
+
+      final otherUser = _conversation!['otherUser'];
+      if (otherUser is Map) {
+        final om = otherUser.cast<String, dynamic>();
+        final profile = om['profile'];
+        if (profile is Map) {
+          final n = _safeStr((profile as Map)['name']);
+          if (n.isNotEmpty) return n;
+        }
+      }
     }
 
-    final otherUser = _conversation!['otherUser'];
-    if (otherUser is Map) {
-      final om = otherUser.cast<String, dynamic>();
-      final profile = om['profile'];
-      if (profile is Map) {
-        final n = _safeStr((profile as Map)['name']);
-        if (n.isNotEmpty) return n;
-      }
+    if (_argUserName != null && _argUserName!.isNotEmpty) {
+      return _argUserName!;
     }
 
     return 'User';
@@ -947,7 +972,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     Get.back(); // Dismiss dialog
                     // Trigger the generic review bottom sheet.
                     Get.bottomSheet(
-                      ReviewBottomSheet(conversationId: _conversationId),
+                      ReviewBottomSheet(
+                        conversationId: _conversationId,
+                        tag: _conversationId,
+                      ),
                       isDismissible: false,
                       enableDrag: false,
                       isScrollControlled: true,

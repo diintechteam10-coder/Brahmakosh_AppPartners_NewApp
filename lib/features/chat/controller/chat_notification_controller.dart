@@ -1,3 +1,4 @@
+import 'package:brahmakoshpartners/core/services/local_notification_service.dart';
 import 'package:brahmakoshpartners/core/services/socket/socket_events.dart';
 import 'package:brahmakoshpartners/core/services/socket/socket_service.dart';
 import 'package:brahmakoshpartners/features/chat/controller/get _message_controller.dart';
@@ -92,6 +93,8 @@ class ChatNotificationController extends GetxController {
       debugPrint(
         "🔔 ChatNotificationController: Received newConversationRequest: $data",
       );
+      // ✅ Show local notification for incoming chat request
+      _handleChatRequestNotification(data);
     });
 
     _socketService.on(SocketEvents.newMessage, (data) {
@@ -196,6 +199,8 @@ class ChatNotificationController extends GetxController {
       "🔔 ChatNotificationController: Sender: $senderName, Content: $content",
     );
 
+    // 🚨 USER REQUEST: Comment out in-app banner since we have device notifications
+    /*
     currentBanner.value = ChatNotification(
       conversationId: convId,
       senderName: senderName,
@@ -204,7 +209,17 @@ class ChatNotificationController extends GetxController {
       profilePic: profilePic,
       acceptedAt: _tryParseDate(msgMap['acceptedAt']),
     );
+    */
 
+    // ✅ Show a local (system) notification
+    LocalNotificationService.I.showMessageNotification(
+      conversationId: convId,
+      senderName: senderName,
+      messageText: content,
+      acceptedAt: msgMap['acceptedAt']?.toString(),
+    );
+
+    /*
     // Auto hide after some time if not already hidden
     Future.delayed(const Duration(seconds: 5), () {
       if (currentBanner.value?.conversationId == convId) {
@@ -214,6 +229,56 @@ class ChatNotificationController extends GetxController {
         currentBanner.value = null;
       }
     });
+    */
+  }
+
+  /// Handle incoming chat request – show system notification
+  void _handleChatRequestNotification(dynamic data) {
+    if (data is! Map) return;
+    final root = Map<String, dynamic>.from(data);
+
+    // Extract user name from event data
+    String userName = 'User';
+    String? topic;
+
+    // Try multiple paths for user info
+    final conversation = root['conversation'] is Map
+        ? Map<String, dynamic>.from(root['conversation'])
+        : root;
+
+    if (conversation['user'] is Map) {
+      final user = conversation['user'] as Map;
+      if (user['profile'] is Map) {
+        userName = user['profile']['name']?.toString() ?? 'User';
+      } else {
+        userName = user['name']?.toString() ?? 'User';
+      }
+    } else if (conversation['userId'] is Map) {
+      final user = conversation['userId'] as Map;
+      userName = user['name']?.toString() ?? 'User';
+    }
+
+    // Extract topic if available
+    if (conversation['userAstrology'] is Map) {
+      final astro = conversation['userAstrology'] as Map;
+      if (astro['additionalInfo'] is Map) {
+        topic = (astro['additionalInfo'] as Map)['concerns']?.toString();
+      }
+    } else if (conversation['userAstrologyData'] is Map) {
+      final astro = conversation['userAstrologyData'] as Map;
+      if (astro['additionalInfo'] is Map) {
+        topic = (astro['additionalInfo'] as Map)['concerns']?.toString();
+      }
+    }
+
+    debugPrint(
+      '🔔 ChatNotificationController: Showing chat request notification for $userName',
+    );
+
+    LocalNotificationService.I.showChatRequestNotification(
+      userName: userName,
+      topic: topic,
+    );
   }
 
   void clearNotification(String convId) {

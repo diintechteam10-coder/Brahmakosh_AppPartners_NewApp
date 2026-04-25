@@ -60,10 +60,14 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final callerName =
+    String callerName =
         widget.incomingCall.from?['profile']?['name'] ??
         widget.incomingCall.from?['name'] ??
         'User';
+
+    if (callerName.contains('@')) {
+      callerName = callerName.split('@')[0];
+    }
 
     debugPrint("📱 Incoming call from: $callerName");
 
@@ -163,8 +167,12 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                   }
 
                   final astroData = _astroCtrl.astrology.value;
-                  final String display_name =
+                  String display_name =
                       astroData?.user.profile.name ?? callerName;
+
+                  if (display_name.contains('@')) {
+                    display_name = display_name.split('@')[0];
+                  }
                   final String display_topic =
                       astroData?.userAstrology.additionalInfo.concerns ??
                       'Voice Call';
