@@ -1,4 +1,5 @@
 import 'package:brahmakoshpartners/core/routes/app_pages.dart';
+import 'package:brahmakoshpartners/core/services/socket/webrtc_service.dart';
 import 'package:brahmakoshpartners/features/call/pages/active_call_screen.dart';
 import 'package:brahmakoshpartners/features/call/pages/incoming_call_screen.dart';
 import 'package:brahmakoshpartners/features/auth/views/login_screen.dart';
@@ -91,10 +92,22 @@ class AppRoutes {
     GetPage(
       name: AppPages.incomingCallScreen,
       page: () {
-        final incomingCall = Get.arguments;
+        final rawArgs = Get.arguments;
+        IncomingCall? incomingCall;
+
+        if (rawArgs is IncomingCall) {
+          incomingCall = rawArgs;
+        } else if (rawArgs is Map) {
+          incomingCall = IncomingCall.fromMap(rawArgs);
+        } else {
+          incomingCall = WebRtcService.I.incomingCall;
+        }
+
         if (incomingCall == null) {
           // Fallback if arguments are lost (e.g. during hot reload)
-          return const Scaffold(body: Center(child: Text('Invalid call session')));
+          return const Scaffold(
+            body: Center(child: Text('Invalid call session')),
+          );
         }
         return IncomingCallScreen(incomingCall: incomingCall);
       },

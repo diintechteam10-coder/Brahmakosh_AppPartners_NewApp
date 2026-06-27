@@ -24,6 +24,17 @@ class IncomingCall {
     this.to,
     this.startedAt,
   });
+
+  factory IncomingCall.fromMap(Map<dynamic, dynamic> map) {
+    return IncomingCall(
+      conversationId: map['conversationId']?.toString() ?? '',
+      from: map['from'] is Map ? Map<String, dynamic>.from(map['from']) : null,
+      to: map['to'] is Map ? Map<String, dynamic>.from(map['to']) : null,
+      startedAt: map['startedAt'] != null
+          ? DateTime.tryParse(map['startedAt'].toString())
+          : null,
+    );
+  }
 }
 
 class WebRtcService {

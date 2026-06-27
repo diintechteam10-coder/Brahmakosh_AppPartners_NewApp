@@ -253,8 +253,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                               final item = list[index];
 
                               // Safe string extraction
+                              final rawConvId = item['conversationId'];
                               final convId = _safeStr(
-                                item['conversationId'],
+                                rawConvId is Map
+                                    ? (rawConvId['conversationId'] ?? rawConvId['_id'])
+                                    : rawConvId,
                                 fallback: _safeStr(item['_id']),
                               );
 

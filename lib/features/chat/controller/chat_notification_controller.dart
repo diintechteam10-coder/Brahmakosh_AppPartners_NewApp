@@ -72,7 +72,10 @@ class ChatNotificationController extends GetxController {
       );
 
       for (var c in convs) {
-        final id = c['conversationId']?.toString() ?? c['_id']?.toString();
+        final rawConvId = c['conversationId'];
+        final id = rawConvId is Map
+            ? (rawConvId['conversationId']?.toString() ?? rawConvId['_id']?.toString())
+            : (rawConvId?.toString() ?? c['_id']?.toString());
         if (id != null) {
           debugPrint("🔔 ChatNotificationController: Joining room: $id");
           _socketService.emit(SocketEvents.joinConversation, {

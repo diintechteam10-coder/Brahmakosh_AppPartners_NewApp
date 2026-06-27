@@ -90,13 +90,15 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint("🔔 New Realtime Chat Request: $data");
 
       if (data is Map<String, dynamic>) {
-        final convId = data['conversationId']?.toString();
+        final convId = data['conversationId']?.toString() ??
+            (data['conversation'] as Map?)?['conversationId']?.toString();
         if (convId != null) {
           final alreadyInApi = _reqCtrl.requests.any(
             (r) => r.conversationId == convId,
           );
           final alreadyInNew = _newRequests.any(
-            (r) => r['conversationId']?.toString() == convId,
+            (r) => r['conversationId']?.toString() == convId ||
+                (r['conversation'] as Map?)?['conversationId']?.toString() == convId,
           );
           if (!alreadyInApi && !alreadyInNew) _newRequests.add(data);
         } else {
@@ -197,7 +199,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String? _extractConversationId(dynamic data) {
     if (data is! Map) return null;
-    final convId = data["conversationId"]?.toString();
+    final convId = data["conversationId"]?.toString() ??
+        (data["conversation"] as Map?)?["conversationId"]?.toString() ??
+        data["_id"]?.toString() ??
+        (data["conversation"] as Map?)?["_id"]?.toString();
     if (convId != null && convId.trim().isNotEmpty) return convId;
     return null;
   }

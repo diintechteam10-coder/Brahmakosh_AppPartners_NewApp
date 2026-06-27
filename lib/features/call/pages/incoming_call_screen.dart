@@ -81,7 +81,9 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
     final mediaQuery = MediaQuery.of(context);
     final padding = mediaQuery.padding;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       backgroundColor: Colours.appBackground,
       body: SafeArea(
         top: false,
@@ -375,10 +377,9 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                   );
                 }),
               ),
-            ),
-          ],
+            ),]
         ),
-      ),
+      ),)
     );
   }
 

@@ -123,164 +123,167 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colours.black, // Dark theme for active call
-      body: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(flex: 2),
-            CircleAvatar(
-              radius: 60.r,
-              backgroundColor: Colours.grey6B788C,
-              child: Icon(Icons.person, size: 60.sp, color: Colours.white),
-            ),
-            24.verticalSpace,
-            // Caller Name
-            Text(
-              widget.callerName,
-              style: TextStyle(
-                fontFamily: Fonts.bold,
-                fontSize: 28.sp,
-                color: Colours.white,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: Colours.black, // Dark theme for active call
+        body: SafeArea(
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
+              CircleAvatar(
+                radius: 60.r,
+                backgroundColor: Colours.grey6B788C,
+                child: Icon(Icons.person, size: 60.sp, color: Colours.white),
               ),
-              textAlign: TextAlign.center,
-            ),
-            12.verticalSpace,
-            // Call Status / Timer
-            Text(
-              WebRtcService.I.state == CallState.inCall
-                  ? _formatDuration(_secondsElapsed)
-                  : _callStatusText,
-              style: TextStyle(
-                fontFamily: Fonts.regular,
-                fontSize: 18.sp,
-                color: Colours.grey858585,
+              24.verticalSpace,
+              // Caller Name
+              Text(
+                widget.callerName,
+                style: TextStyle(
+                  fontFamily: Fonts.bold,
+                  fontSize: 28.sp,
+                  color: Colours.white,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            if (WebRtcService.I.isRecording) ...[
               12.verticalSpace,
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 500),
-                opacity: _secondsElapsed % 2 == 0 ? 1.0 : 0.3,
+              // Call Status / Timer
+              Text(
+                WebRtcService.I.state == CallState.inCall
+                    ? _formatDuration(_secondsElapsed)
+                    : _callStatusText,
+                style: TextStyle(
+                  fontFamily: Fonts.regular,
+                  fontSize: 18.sp,
+                  color: Colours.grey858585,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (WebRtcService.I.isRecording) ...[
+                12.verticalSpace,
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 500),
+                  opacity: _secondsElapsed % 2 == 0 ? 1.0 : 0.3,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 12.w,
+                        height: 12.w,
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      8.horizontalSpace,
+                      Text(
+                        "Recording",
+                        style: TextStyle(
+                          fontFamily: Fonts.medium,
+                          fontSize: 14.sp,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const Spacer(flex: 3),
+
+              // Invisible renderer required for WebRTC audio playback on mobile
+              Offstage(
+                offstage: true,
+                child: SizedBox(
+                  width: 1,
+                  height: 1,
+                  child: RTCVideoView(_remoteRenderer),
+                ),
+              ),
+
+              Container(
+                margin: EdgeInsets.only(bottom: 60.h),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Container(
-                      width: 12.w,
-                      height: 12.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.redAccent,
-                        shape: BoxShape.circle,
+                    // Mute Button
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          WebRtcService.I.toggleMute();
+                        });
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 60.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: WebRtcService.I.isMuted
+                              ? Colours.white
+                              : Colours.white.withOpacity(0.2),
+                        ),
+                        child: Icon(
+                          WebRtcService.I.isMuted ? Icons.mic_off : Icons.mic,
+                          color: WebRtcService.I.isMuted
+                              ? Colours.black
+                              : Colours.white,
+                          size: 28.sp,
+                        ),
                       ),
                     ),
-                    8.horizontalSpace,
-                    Text(
-                      "Recording",
-                      style: TextStyle(
-                        fontFamily: Fonts.medium,
-                        fontSize: 14.sp,
-                        color: Colors.redAccent,
+
+                    // End Call Button
+                    GestureDetector(
+                      onTap: () async {
+                        await WebRtcService.I.endCall();
+                      },
+                      child: Container(
+                        width: 70.w,
+                        height: 70.w,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.redAccent,
+                        ),
+                        child: Icon(
+                          Icons.call_end,
+                          color: Colours.white,
+                          size: 32.sp,
+                        ),
+                      ),
+                    ),
+
+                    // Speaker Button
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          WebRtcService.I.toggleSpeaker();
+                        });
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 60.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: WebRtcService.I.isSpeakerphoneOn
+                              ? Colours.white
+                              : Colours.white.withOpacity(0.2),
+                        ),
+                        child: Icon(
+                          WebRtcService.I.isSpeakerphoneOn
+                              ? Icons.volume_up
+                              : Icons.volume_down,
+                          color: WebRtcService.I.isSpeakerphoneOn
+                              ? Colours.black
+                              : Colours.white,
+                          size: 28.sp,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ],
-            const Spacer(flex: 3),
-
-            // Invisible renderer required for WebRTC audio playback on mobile
-            Offstage(
-              offstage: true,
-              child: SizedBox(
-                width: 1,
-                height: 1,
-                child: RTCVideoView(_remoteRenderer),
-              ),
-            ),
-
-            Container(
-              margin: EdgeInsets.only(bottom: 60.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Mute Button
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        WebRtcService.I.toggleMute();
-                      });
-                    },
-                    child: Container(
-                      width: 60.w,
-                      height: 60.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: WebRtcService.I.isMuted
-                            ? Colours.white
-                            : Colours.white.withOpacity(0.2),
-                      ),
-                      child: Icon(
-                        WebRtcService.I.isMuted ? Icons.mic_off : Icons.mic,
-                        color: WebRtcService.I.isMuted
-                            ? Colours.black
-                            : Colours.white,
-                        size: 28.sp,
-                      ),
-                    ),
-                  ),
-
-                  // End Call Button
-                  GestureDetector(
-                    onTap: () async {
-                      await WebRtcService.I.endCall();
-                    },
-                    child: Container(
-                      width: 70.w,
-                      height: 70.w,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.redAccent,
-                      ),
-                      child: Icon(
-                        Icons.call_end,
-                        color: Colours.white,
-                        size: 32.sp,
-                      ),
-                    ),
-                  ),
-
-                  // Speaker Button
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        WebRtcService.I.toggleSpeaker();
-                      });
-                    },
-                    child: Container(
-                      width: 60.w,
-                      height: 60.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: WebRtcService.I.isSpeakerphoneOn
-                            ? Colours.white
-                            : Colours.white.withOpacity(0.2),
-                      ),
-                      child: Icon(
-                        WebRtcService.I.isSpeakerphoneOn
-                            ? Icons.volume_up
-                            : Icons.volume_down,
-                        color: WebRtcService.I.isSpeakerphoneOn
-                            ? Colours.black
-                            : Colours.white,
-                        size: 28.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
